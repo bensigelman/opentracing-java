@@ -13,7 +13,9 @@
  */
 package io.opentracing.impl;
 
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
+import io.opentracing.SpanSnapshot;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Extractor;
 import io.opentracing.propagation.Format;
@@ -61,6 +63,11 @@ abstract class AbstractTracer implements Tracer {
 
     /** @return the minimal set of properties required to propagate this span */
     abstract Map<String,Object> getTraceState(SpanContext spanContext);
+
+
+    public abstract Span active();
+
+    public abstract Span resume(SpanSnapshot snapshot);
 
     private static class PropagationRegistry {
 
