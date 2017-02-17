@@ -13,6 +13,7 @@
  */
 package io.opentracing.impl;
 
+import io.opentracing.SpanScheduler;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Extractor;
@@ -28,13 +29,25 @@ abstract class AbstractTracer implements Tracer {
     static final boolean BAGGAGE_ENABLED = !Boolean.getBoolean("opentracing.propagation.dropBaggage");
 
     private final PropagationRegistry registry = new PropagationRegistry();
+    private SpanScheduler scheduler;
+
 
     protected AbstractTracer() {
+        this(null);  // SpanScheduler is optional for this spike
+    }
+
+    protected AbstractTracer(SpanScheduler scheduler) {
+        this.scheduler = scheduler;
         registry.register(Format.Builtin.TEXT_MAP, new TextMapInjectorImpl(this));
         registry.register(Format.Builtin.TEXT_MAP, new TextMapExtractorImpl(this));
     }
 
     abstract AbstractSpanBuilder createSpanBuilder(String operationName);
+
+    @Override
+    public SpanScheduler spanScheduler() {
+        return this.scheduler;
+    }
 
     @Override
     public SpanBuilder buildSpan(String operationName){

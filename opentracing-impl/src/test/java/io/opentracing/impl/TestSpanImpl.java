@@ -16,7 +16,6 @@ package io.opentracing.impl;
 import io.opentracing.impl.AbstractSpan;
 
 public class TestSpanImpl extends AbstractSpan {
-
     TestSpanImpl(String operationName) {
         super(operationName);
     }

@@ -13,10 +13,8 @@
  */
 package io.opentracing.impl;
 
-import io.opentracing.References;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
+import io.opentracing.*;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -120,6 +118,11 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
         numberTags.entrySet().forEach((entry) -> span.setTag(entry.getKey(), entry.getValue()));
         baggage.entrySet().forEach((entry) -> span.setBaggageItem(entry.getKey(), entry.getValue()));
         return span;
+    }
+
+    @Override
+    public SpanScheduler.Continuation startAndActivate(boolean autoFinish) {
+        return null;  // XXX: not correct... we'd need access to the AbstractTracer's SpanScheduler.
     }
 
     private void withBaggageFrom(SpanContext from) {

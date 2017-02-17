@@ -21,7 +21,6 @@ public interface NoopSpan extends Span {
 
 final class NoopSpanImpl implements NoopSpan {
 
-
     @Override
     public SpanContext context() { return NoopSpanContextImpl.INSTANCE; }
 
