@@ -30,5 +30,17 @@ final class NoopTracerImpl implements NoopTracer {
     @Override
     public <C> SpanContext extract(Format<C> format, C carrier) { return NoopSpanBuilderImpl.INSTANCE; }
 
+    @Override
+    public Span active() { return NoopSpan.INSTANCE; }
+
+    @Override
+    public SpanSnapshot snapshot(Span span) { return NoopSpanSnapshot.INSTANCE; }
+
+    @Override
+    public Span resume(SpanSnapshot snapshot) { return NoopSpan.INSTANCE; }
+
+    @Override
+    public void deactivate(Span span) {}
+
 }
 

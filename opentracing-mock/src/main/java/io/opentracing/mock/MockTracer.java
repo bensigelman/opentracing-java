@@ -38,6 +38,7 @@ import io.opentracing.propagation.TextMap;
 public class MockTracer implements Tracer {
     private List<MockSpan> finishedSpans = new ArrayList<>();
     private final Propagator propagator;
+    private Span activeSpan;
 
     public MockTracer() {
         this(Propagator.PRINTER);
@@ -148,6 +149,15 @@ public class MockTracer implements Tracer {
     public SpanBuilder buildSpan(String operationName) {
         return new SpanBuilder(operationName);
     }
+
+    @Override
+    public Span active() { return this.activeSpan;  }
+
+    @Override
+    public void activate(Span span) { this.activeSpan = span; }
+
+    @Override
+    public void deactivate(Span span) { this.activeSpan = null; }
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {

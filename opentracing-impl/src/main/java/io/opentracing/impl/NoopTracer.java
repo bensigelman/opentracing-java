@@ -13,7 +13,7 @@
  */
 package io.opentracing.impl;
 
-import io.opentracing.SpanContext;
+import io.opentracing.*;
 import io.opentracing.propagation.Format;
 import java.util.Collections;
 import java.util.Map;
@@ -40,5 +40,16 @@ final class NoopTracer extends AbstractTracer implements io.opentracing.NoopTrac
         return Collections.emptyMap();
     }
 
+    @Override
+    public Span active() { return io.opentracing.NoopSpan.INSTANCE; }
+
+    @Override
+    public SpanSnapshot snapshot(Span span) { return NoopSpanSnapshot.INSTANCE; }
+
+    @Override
+    public Span resume(SpanSnapshot snapshot) { return io.opentracing.NoopSpan.INSTANCE; }
+
+    @Override
+    public void deactivate(Span span) {}
 
 }
