@@ -1,7 +1,6 @@
 package io.opentracing.concurrent;
 
 import io.opentracing.Span;
-import io.opentracing.SpanSnapshot;
 import io.opentracing.Tracer;
 import io.opentracing.impl.GlobalTracer;
 

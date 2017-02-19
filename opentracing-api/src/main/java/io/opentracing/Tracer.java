@@ -41,6 +41,8 @@ public interface Tracer {
    */
   SpanBuilder buildSpan(String operationName);
 
+  void setActiveSpanManager(ActiveSpanManager mgr);
+
   /**
    * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
    *
@@ -88,30 +90,8 @@ public interface Tracer {
    */
   <C> SpanContext extract(Format<C> format, C carrier);
 
-  /**
-   * Returns the span associated with the current execution context.
-   *
-   */
-  Span active();
-
-  /**
-   * Retrieve the associated SpanSnapshot.
-   * @return the SpanSnapshot that encapsulates Span state that should propagate across in-process concurrency boundaries.
-   */
-  SpanSnapshot snapshot(Span span);
-
-  /**
-   * Resusitates a span in the current execution context, and sets it to active.
-   *
-   */
-  Span resume(SpanSnapshot snapshot);
-
-  /**
-   * Clears the Span from the stack of active spans.
-   * @param span
-   */
-  void deactivate(Span span);
-
+  // XXX(bhs): could make this an abstract class. In any case, by default a SpanBuilder will have an asChildOf pointer
+  // to the ActiveSpanManager's active Span's SpanContext.
   interface SpanBuilder extends SpanContext {
 
       /**

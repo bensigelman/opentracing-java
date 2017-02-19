@@ -15,7 +15,6 @@ package io.opentracing.impl;
 
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
-import io.opentracing.SpanSnapshot;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Extractor;
 import io.opentracing.propagation.Format;
