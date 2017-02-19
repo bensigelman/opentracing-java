@@ -20,10 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import io.opentracing.References;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
+import io.opentracing.*;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 
@@ -38,7 +35,7 @@ import io.opentracing.propagation.TextMap;
 public class MockTracer implements Tracer {
     private List<MockSpan> finishedSpans = new ArrayList<>();
     private final Propagator propagator;
-    private Span activeSpan;
+    private ActiveSpanManager activeSpanManager;
 
     public MockTracer() {
         this(Propagator.PRINTER);
@@ -147,17 +144,25 @@ public class MockTracer implements Tracer {
 
     @Override
     public SpanBuilder buildSpan(String operationName) {
-        return new SpanBuilder(operationName);
+        SpanBuilder sb = new SpanBuilder(operationName);
+        if (this.activeSpanManager != null) {
+            Span active = this.activeSpanManager.active();
+            if (active != null) {
+                sb.asChildOf(active.context());
+            }
+        }
+        return sb;
     }
 
     @Override
-    public Span active() { return this.activeSpan;  }
+    public void setActiveSpanManager(ActiveSpanManager mgr) {
+        this.activeSpanManager = mgr;
+    }
 
-    @Override
-    public void activate(Span span) { this.activeSpan = span; }
-
-    @Override
-    public void deactivate(Span span) { this.activeSpan = null; }
+    // XXX: comment
+    ActiveSpanManager getActiveSpanManager() {
+        return this.activeSpanManager;
+    }
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
@@ -231,7 +236,12 @@ public class MockTracer implements Tracer {
             if (this.startMicros == 0) {
                 this.startMicros = MockSpan.nowMicros();
             }
-            return new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
+            Span rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
+            if (MockTracer.this.activeSpanManager != null) {
+                MockTracer.this.activeSpanManager.activate(
+                        MockTracer.this.activeSpanManager.snapshot(rval));
+            }
+            return rval;
         }
 
         @Override
