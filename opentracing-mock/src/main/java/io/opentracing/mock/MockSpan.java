@@ -16,6 +16,7 @@ package io.opentracing.mock;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.opentracing.ActiveSpanManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 
@@ -38,6 +39,7 @@ public final class MockSpan implements Span {
     private final Map<String, Object> tags;
     private final List<LogEntry> logEntries = new ArrayList<>();
     private String operationName;
+    private ActiveSpanManager.Snapshot snapshot;
 
     private final List<RuntimeException> errors = new ArrayList<>();
 
@@ -106,9 +108,18 @@ public final class MockSpan implements Span {
     @Override
     public synchronized void finish(long finishMicros) {
         finishedCheck("Finishing already finished span");
+
+        if (this.mockTracer.getActiveSpanManager() != null) {
+            this.mockTracer.getActiveSpanManager().deactivate(this.snapshot);
+        }
         this.finishMicros = finishMicros;
         this.mockTracer.appendFinishedSpan(this);
         this.finished = true;
+    }
+
+    @Override
+    public synchronized boolean isFinished() {
+        return finished;
     }
 
     @Override
@@ -265,6 +276,11 @@ public final class MockSpan implements Span {
             // We're a child Span.
             this.context = new MockContext(parent.traceId, nextId(), parent.baggage);
             this.parentId = parent.spanId;
+        }
+
+        if (tracer.getActiveSpanManager() != null) {
+            // XXX weird/awkward
+            this.snapshot = tracer.getActiveSpanManager().snapshot(this);
         }
     }
 
