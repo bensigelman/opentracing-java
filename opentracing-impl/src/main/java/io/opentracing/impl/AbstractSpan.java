@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 abstract class AbstractSpan implements Span, SpanContext {
 
@@ -34,6 +35,7 @@ abstract class AbstractSpan implements Span, SpanContext {
     private Duration duration;
     private final Map<String,Object> tags = new HashMap<>();
     private final List<LogData> logs = new ArrayList<>();
+    private final AtomicLong refCount = new AtomicLong(0);  // XXX
 
     AbstractSpan(String operationName ) {
         this(operationName, Instant.now());
@@ -42,6 +44,17 @@ abstract class AbstractSpan implements Span, SpanContext {
     AbstractSpan(String operationName, Instant start) {
         this.operationName = operationName;
         this.start = start;
+    }
+
+    @Override
+    public void incRef() {
+        refCount.incrementAndGet();
+    }
+    @Override
+    public void decRef() {
+        if (refCount.decrementAndGet() == 0) {
+            this.finish();
+        }
     }
 
     @Override
