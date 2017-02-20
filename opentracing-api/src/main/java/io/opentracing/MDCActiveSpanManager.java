@@ -78,35 +78,3 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
         tlsSnapshot.set(nextActiveSnapshot);
     }
 }
-
-/*
-
-STREAM OF CONSCIOUSNESS:
-
-When the user starts a new Span:
- - Span goes into TLS immediately
- - Existing TLS Span must become a parent pointer or similar
-
-When a Span comes into the foreground:
- - must adopt the context from the last time it was paused or created
- - must retain a pointer to whatever it replaced
-
-When a Span goes into the background or finishes:
- - restore whatever retained pointer there was
-   - ... and if that pointer has already been finished?
-
-I'm troubled by the case where multiple children are created and then the parent finishes before the children.
-
-[ Span P        ]
-  [ Span A                 ]
-  [ Span B            ]
-  [ Span C                      ]
-
-(Where P is the parent of A, B, and C)
-
-When A-C finish in that scenario, what should happen to the threadlocal?
-
-What if all "managed" activity had to happen in the context of a Closure/Runnable? Return value could indicate whether
-the Span should finish or not.
-
- */

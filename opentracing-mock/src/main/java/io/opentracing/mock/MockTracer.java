@@ -164,11 +164,6 @@ public class MockTracer implements Tracer {
         return activeSpanManager;
     }
 
-    // XXX: comment
-    ActiveSpanManager getActiveSpanManager() {
-        return this.activeSpanManager;
-    }
-
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
         this.propagator.inject((MockSpan.MockContext)spanContext, format, carrier);
