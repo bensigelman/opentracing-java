@@ -98,8 +98,8 @@ public final class MockSpan implements Span {
     @Override
     public synchronized void finish(long finishMicros) {
         if (!finished) {
-            if (this.mockTracer.getActiveSpanManager() != null) {
-                this.mockTracer.getActiveSpanManager().deactivate(this.snapshot);
+            if (this.mockTracer.activeSpanManager() != null) {
+                this.mockTracer.activeSpanManager().deactivate(this.snapshot);
             }
             this.finishMicros = finishMicros;
             this.mockTracer.appendFinishedSpan(this);
@@ -264,9 +264,9 @@ public final class MockSpan implements Span {
             this.parentId = parent.spanId;
         }
 
-        if (tracer.getActiveSpanManager() != null) {
+        if (tracer.activeSpanManager() != null) {
             // XXX weird/awkward
-            this.snapshot = tracer.getActiveSpanManager().snapshot(this);
+            this.snapshot = tracer.activeSpanManager().snapshot(this);
         }
     }
 
