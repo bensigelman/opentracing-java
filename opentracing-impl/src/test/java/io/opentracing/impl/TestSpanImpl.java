@@ -20,4 +20,9 @@ public class TestSpanImpl extends AbstractSpan {
     TestSpanImpl(String operationName) {
         super(operationName);
     }
+
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }

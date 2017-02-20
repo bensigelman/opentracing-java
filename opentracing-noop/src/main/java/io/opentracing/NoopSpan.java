@@ -21,7 +21,6 @@ public interface NoopSpan extends Span {
 
 final class NoopSpanImpl implements NoopSpan {
 
-
     @Override
     public SpanContext context() { return NoopSpanContextImpl.INSTANCE; }
 
@@ -30,6 +29,9 @@ final class NoopSpanImpl implements NoopSpan {
 
     @Override
     public void finish(long finishMicros) {}
+
+    @Override
+    public boolean isFinished() { return true; }
 
     @Override
     public void close() { finish(); }

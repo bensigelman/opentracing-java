@@ -13,6 +13,7 @@
  */
 package io.opentracing.impl;
 
+import io.opentracing.ActiveSpanManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -29,6 +30,7 @@ abstract class AbstractTracer implements Tracer {
     static final boolean BAGGAGE_ENABLED = !Boolean.getBoolean("opentracing.propagation.dropBaggage");
 
     private final PropagationRegistry registry = new PropagationRegistry();
+    private ActiveSpanManager manager;
 
     protected AbstractTracer() {
         registry.register(Format.Builtin.TEXT_MAP, new TextMapInjectorImpl(this));
@@ -36,6 +38,16 @@ abstract class AbstractTracer implements Tracer {
     }
 
     abstract AbstractSpanBuilder createSpanBuilder(String operationName);
+
+    @Override
+    public void setActiveSpanManager(ActiveSpanManager manager) {
+        this.manager = manager;
+    }
+
+    @Override
+    public ActiveSpanManager activeSpanManager() {
+        return this.manager;
+    }
 
     @Override
     public SpanBuilder buildSpan(String operationName){
@@ -62,11 +74,6 @@ abstract class AbstractTracer implements Tracer {
 
     /** @return the minimal set of properties required to propagate this span */
     abstract Map<String,Object> getTraceState(SpanContext spanContext);
-
-
-    public abstract Span active();
-
-    public abstract Span resume(SpanSnapshot snapshot);
 
     private static class PropagationRegistry {
 
