@@ -40,6 +40,7 @@ public final class MockSpan implements Span {
     private final List<LogEntry> logEntries = new ArrayList<>();
     private String operationName;
     private ActiveSpanManager.Snapshot snapshot;
+    private static AtomicLong refCount = new AtomicLong(0);
 
     private final List<RuntimeException> errors = new ArrayList<>();
 
@@ -98,6 +99,18 @@ public final class MockSpan implements Span {
     @Override
     public synchronized MockContext context() {
         return this.context;
+    }
+
+    @Override
+    public void incRef() {
+        refCount.incrementAndGet();
+    }
+
+    @Override
+    public void decRef() {
+        if (refCount.decrementAndGet() == 0) {
+            this.finish();
+        };
     }
 
     @Override

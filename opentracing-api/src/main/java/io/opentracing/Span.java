@@ -31,6 +31,11 @@ public interface Span extends Closeable {
      */
     SpanContext context();
 
+    // XXX: comment
+    void incRef();
+    // if decRef moves refcount to 0, must call finish()
+    void decRef();
+
     /**
      * Sets the end timestamp to now and records the span.
      *
