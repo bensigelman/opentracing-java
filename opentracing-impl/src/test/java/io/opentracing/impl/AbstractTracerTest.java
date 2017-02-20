@@ -158,9 +158,6 @@ public final class AbstractTracerTest {
         Map<String, Object> getTraceState(SpanContext spanContext) {
             return new HashMap<>(((AbstractSpan)spanContext).getBaggage());
         }
-
-        @Override
-        public Span active() { return this.activeSpan;  }
     }
 
 }

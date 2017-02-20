@@ -24,7 +24,7 @@ public interface ActiveSpanManager {
     /**
      * Activates a given Snapshot (per snapshot()).
      */
-    void activate(Snapshot snapshot);
+    Span activate(Snapshot snapshot);
 
     /**
      * XXX: comment

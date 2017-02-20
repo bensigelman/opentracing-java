@@ -49,12 +49,13 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
     }
 
     @Override
-    public void activate(Snapshot snapshot) {
+    public Span activate(Snapshot snapshot) {
         if (!(snapshot instanceof MDCSnapshot)) {
             throw new IllegalArgumentException("activate() expected MDCSnapshot");
         }
         ((MDCSnapshot) snapshot).setToRestore(tlsSnapshot.get());
         tlsSnapshot.set((MDCSnapshot)snapshot);
+        return snapshot.span();
     }
 
     @Override
