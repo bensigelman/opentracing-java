@@ -1,34 +1,23 @@
 package io.opentracing;
 
-/**
- * XXX(bhs): comment
- */
 public interface ActiveSpanManager {
-    // XXX(bhs): good comment. just a marker, obviously.
+    // Basically a marker interface
     public interface Snapshot {
         Span span();
     }
 
-    /**
-     * Returns the span associated with the current execution context.
-     *
-     */
+    // Get the currently active Span (perhaps for this thread, etc)
     Span active();
 
-    /**
-     * Retrieve the associated SpanSnapshot.
-     * @return the SpanSnapshot that encapsulates Span state that should propagate across in-process concurrency boundaries.
-     */
+    // Create a Snapshot encapsulating both the given Span and any state needed to activate/deactivate (see below)
     Snapshot snapshot(Span span);
 
-    /**
-     * Activates a given Snapshot (per snapshot()).
-     */
+    // Make the Snapshot and the Span it contains "active" per active().
+    //
+    // *Must* be paired with a subsequent call to deactivate().
     Span activate(Snapshot snapshot);
 
-    /**
-     * XXX: comment
-     */
+    // See activate() above.
     void deactivate(Snapshot snapshot);
 
 }

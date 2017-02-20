@@ -278,9 +278,9 @@ public final class MockSpan implements Span {
             this.parentId = parent.spanId;
         }
 
-        if (tracer.getActiveSpanManager() != null) {
+        if (tracer.activeSpanManager() != null) {
             // XXX weird/awkward
-            this.snapshot = tracer.getActiveSpanManager().snapshot(this);
+            this.snapshot = tracer.activeSpanManager().snapshot(this);
         }
     }
 
