@@ -159,6 +159,11 @@ public class MockTracer implements Tracer {
         this.activeSpanManager = mgr;
     }
 
+    @Override
+    public ActiveSpanManager activeSpanManager() {
+        return activeSpanManager;
+    }
+
     // XXX: comment
     ActiveSpanManager getActiveSpanManager() {
         return this.activeSpanManager;

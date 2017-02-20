@@ -112,28 +112,18 @@ public final class GlobalTracer implements Tracer {
     }
 
     @Override
-    public Span active(){
-        return lazyTracer().active();
-    }
-
-    @Override
-    public SpanSnapshot snapshot(Span span){
-        return lazyTracer().snapshot(span);
-    }
-
-    @Override
-    public void deactivate(Span span){
-        lazyTracer().deactivate(span);
-    }
-
-    @Override
-    public Span resume(SpanSnapshot snapshot){
-        return lazyTracer().resume(snapshot);
-    }
-
-    @Override
     public SpanBuilder buildSpan(String operationName) {
         return lazyTracer().buildSpan(operationName);
+    }
+
+    @Override
+    public void setActiveSpanManager(ActiveSpanManager mgr) {
+        lazyTracer().setActiveSpanManager(mgr);
+    }
+
+    @Override
+    public ActiveSpanManager activeSpanManager() {
+        return lazyTracer().activeSpanManager();
     }
 
     @Override

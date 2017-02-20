@@ -1,5 +1,6 @@
 package io.opentracing.concurrent;
 
+import io.opentracing.ActiveSpanManager;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.impl.GlobalTracer;
@@ -11,43 +12,37 @@ import java.util.concurrent.*;
 
 public class TracedExecutorService implements ExecutorService {
     private ExecutorService executor;
-    private Span span;
-    private Tracer tracer;
+    private ActiveSpanManager manager;
 
     public TracedExecutorService(ExecutorService executor){
-        this(executor, GlobalTracer.get());
+        this(executor, GlobalTracer.get().activeSpanManager());
     }
 
-    public TracedExecutorService(ExecutorService executor, Tracer tracer){
-        this(executor, tracer.active(), tracer);
-    }
-
-    public TracedExecutorService(ExecutorService executor, Span span, Tracer tracer){
+    public TracedExecutorService(ExecutorService executor, ActiveSpanManager manager) {
         if (executor == null) throw new NullPointerException("Executor is <null>.");
-        if (tracer == null) throw new NullPointerException("Tracer is <null>.");
+        if (manager == null) throw new NullPointerException("ActiveSpanManager is <null>.");
         this.executor = executor;
-        this.span = span;
-        this.tracer = tracer;
+        this.manager = manager;
     }
 
     @Override
     public void execute(Runnable command) {
-        executor.execute(new TracedRunnable(command, span, tracer));
+        executor.execute(new TracedRunnable(command, manager));
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return executor.submit(new TracedRunnable(task, span, tracer));
+        return executor.submit(new TracedRunnable(task, manager));
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return executor.submit(new TracedRunnable(task, span, tracer), result);
+        return executor.submit(new TracedRunnable(task, manager), result);
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return executor.submit(new TracedCallable(task, span, tracer));
+        return executor.submit(new TracedCallable(task, manager));
     }
 
     @Override
@@ -101,7 +96,7 @@ public class TracedExecutorService implements ExecutorService {
         Collection<? extends Callable<T>> tasks) {
         if (tasks == null) throw new NullPointerException("Collection of tasks is <null>.");
         Collection<Callable<T>> result = new ArrayList<Callable<T>>(tasks.size());
-        for (Callable<T> task : tasks) result.add(new TracedCallable(task, span, tracer));
+        for (Callable<T> task : tasks) result.add(new TracedCallable(task, manager));
         return result;
     }
 }

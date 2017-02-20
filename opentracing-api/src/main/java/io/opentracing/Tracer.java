@@ -42,6 +42,7 @@ public interface Tracer {
   SpanBuilder buildSpan(String operationName);
 
   void setActiveSpanManager(ActiveSpanManager mgr);
+  ActiveSpanManager activeSpanManager();
 
   /**
    * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
