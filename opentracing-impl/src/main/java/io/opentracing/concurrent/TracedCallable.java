@@ -29,11 +29,11 @@ public class TracedCallable<T> implements Callable<T> {
     }
 
     public T call() throws Exception {
-        final Span span = manager.activate(snapshot);
+        final Span span = snapshot.activate();
         try {
             return callable.call();
         } finally {
-            manager.deactivate(snapshot);
+            snapshot.deactivate();
         }
     }
 }

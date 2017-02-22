@@ -33,11 +33,11 @@ public class TracedRunnable implements Runnable {
 
     @Override
     public void run() {
-        final Span span = manager.activate(this.snapshot);
+        final Span span = this.snapshot.activate();
         try {
             runnable.run();
         } finally {
-            manager.deactivate(this.snapshot);
+            this.snapshot.deactivate();
         }
     }
 }
