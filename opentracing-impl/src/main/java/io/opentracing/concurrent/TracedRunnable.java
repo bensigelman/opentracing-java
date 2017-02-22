@@ -28,6 +28,7 @@ public class TracedRunnable implements Runnable {
         this.runnable = runnable;
         this.manager = manager;
         this.snapshot = manager.snapshot(span);
+        span.incRef();
     }
 
     @Override

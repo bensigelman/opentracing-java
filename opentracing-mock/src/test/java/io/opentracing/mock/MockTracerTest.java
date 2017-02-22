@@ -16,17 +16,19 @@ package io.opentracing.mock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
-import io.opentracing.MDCActiveSpanManager;
+import io.opentracing.*;
+import io.opentracing.concurrent.TracedCallable;
+import io.opentracing.concurrent.TracedExecutorService;
+import io.opentracing.concurrent.TracedRunnable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.propagation.TextMapInjectAdapter;
@@ -38,16 +40,17 @@ public class MockTracerTest {
     @Test
     public void testMDCHack() {
         org.apache.log4j.BasicConfigurator.configure();
-        Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
+        final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
         MDC.put("key1", "val1");
         Map<String, String> ctxMap = MDC.getCopyOfContextMap();
         MDC.put("key2", "val2");
         MDC.setContextMap(ctxMap);
         logger.info("testing: {}", MDC.getCopyOfContextMap().toString());
 
-        MockTracer tracer = new MockTracer();
+        final MockTracer tracer = new MockTracer();
         tracer.setActiveSpanManager(new MDCActiveSpanManager());
 
+        /*
         Span par = tracer.buildSpan("parent").start();
         Span childA = tracer.buildSpan("childA").start();
         childA.finish();
@@ -57,6 +60,74 @@ public class MockTracerTest {
 
         for (MockSpan span : finishedSpans) {
             logger.info("finished Span. {} :: {} ({})", span.context().traceId(), span.context().spanId(), span.parentId());
+        }
+        tracer.reset();
+        */
+
+        ExecutorService realExecutor = Executors.newFixedThreadPool(500);
+        final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
+        Span parent = tracer.buildSpan("parent").start();
+        tracer.activeSpanManager().activate(tracer.activeSpanManager().snapshot(parent));
+        parent.incRef();
+        final List<Future<?>> futures = new ArrayList<>();
+        final List<Future<?>> subfutures = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            final int j = i;
+            futures.add(otExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    final Span child = tracer.buildSpan("child_" + j).start();
+                    ActiveSpanManager.Snapshot childSnapshot = tracer.activeSpanManager().snapshot(child);
+                    tracer.activeSpanManager().activate(childSnapshot);
+                    try {
+                        Thread.currentThread().sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    child.log("awoke");
+                    logger.info("defining");
+                    Runnable r = new Runnable() {
+                        @Override
+                        public void run() {
+                            Span active = tracer.activeSpanManager().active();
+                            active.log("awoke again");
+                            Span grandchild = tracer.buildSpan("grandchild").start();
+                            grandchild.finish();
+                        }
+                    };
+                    logger.info("submitting");
+                    subfutures.add(otExecutor.submit(r));
+                    logger.info("deactivating");
+                    tracer.activeSpanManager().deactivate(childSnapshot);
+                }
+            }));
+        }
+        try {
+            for (Future<?> f : futures) {
+                f.get();
+            }
+            for (Future<?> f : subfutures) {
+                f.get();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        otExecutor.shutdown();
+        try {
+            otExecutor.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        parent.finish();
+
+        List<MockSpan> finishedSpans = tracer.finishedSpans();
+
+        logger.info("DONE SLEEPING");
+        for (MockSpan span : finishedSpans) {
+            logger.info("finished Span '{}'. trace={}, span={}, parent={}", span.operationName(), span.context().traceId(), span.context().spanId(), span.parentId());
         }
     }
 
