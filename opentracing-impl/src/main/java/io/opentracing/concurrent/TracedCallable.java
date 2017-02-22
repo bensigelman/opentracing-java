@@ -25,6 +25,7 @@ public class TracedCallable<T> implements Callable<T> {
         this.callable= callable;
         this.manager = manager;
         this.snapshot = manager.snapshot(span);
+        span.incRef();
     }
 
     public T call() throws Exception {

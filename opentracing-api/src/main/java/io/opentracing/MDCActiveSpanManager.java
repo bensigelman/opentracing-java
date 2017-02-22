@@ -35,17 +35,17 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
     }
 
     @Override
+    public MDCSnapshot snapshot(Span span) {
+        return new MDCSnapshot(span);
+    }
+
+    @Override
     public Span active() {
         MDCSnapshot snapshot = tlsSnapshot.get();
         if (snapshot == null) {
             return null;
         }
         return snapshot.span();
-    }
-
-    @Override
-    public MDCSnapshot snapshot(Span span) {
-        return new MDCSnapshot(span);
     }
 
     @Override
@@ -62,6 +62,9 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
     public void deactivate(Snapshot snapshot) {
         if (!(snapshot instanceof MDCSnapshot)) {
             throw new IllegalArgumentException("deactivate() expected MDCSnapshot");
+        }
+        if (snapshot.span() != null) {
+            snapshot.span().decRef();
         }
 
         if (tlsSnapshot.get() != snapshot) {

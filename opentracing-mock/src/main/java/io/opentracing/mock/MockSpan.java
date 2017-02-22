@@ -39,8 +39,7 @@ public final class MockSpan implements Span {
     private final Map<String, Object> tags;
     private final List<LogEntry> logEntries = new ArrayList<>();
     private String operationName;
-    private ActiveSpanManager.Snapshot snapshot;
-    private static AtomicLong refCount = new AtomicLong(0);
+    private final AtomicLong refCount = new AtomicLong(0);
 
     private final List<RuntimeException> errors = new ArrayList<>();
 
@@ -103,11 +102,13 @@ public final class MockSpan implements Span {
 
     @Override
     public void incRef() {
+        System.out.println("incRef: " + refCount.get() + " :: " + this.operationName);
         refCount.incrementAndGet();
     }
 
     @Override
     public void decRef() {
+        System.out.println("decRef: " + refCount.get() + " :: " + this.operationName);
         if (refCount.decrementAndGet() == 0) {
             this.finish();
         };
@@ -289,11 +290,6 @@ public final class MockSpan implements Span {
             // We're a child Span.
             this.context = new MockContext(parent.traceId, nextId(), parent.baggage);
             this.parentId = parent.spanId;
-        }
-
-        if (tracer.activeSpanManager() != null) {
-            // XXX weird/awkward
-            this.snapshot = tracer.activeSpanManager().snapshot(this);
         }
     }
 
