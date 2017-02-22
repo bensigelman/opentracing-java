@@ -21,16 +21,31 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
             this.span = span;
         }
 
-        public Span span() {
+        @Override
+        public Span activate() {
+            toRestore = tlsSnapshot.get();
+            tlsSnapshot.set(this);
             return span;
         }
 
-        void setToRestore(MDCSnapshot toRestore) {
-            this.toRestore = toRestore;
-        }
+        @Override
+        public void deactivate() {
+            if (span != null) {
+                span.decRef();
+            }
 
-        MDCSnapshot toRestore() {
-            return toRestore;
+            if (tlsSnapshot.get() != this) {
+                // do nothing
+                return;
+            }
+            MDCSnapshot nextActiveSnapshot = toRestore;
+            while (nextActiveSnapshot != null) {
+                if (!nextActiveSnapshot.span.isFinished()) {
+                    break;
+                }
+                nextActiveSnapshot = nextActiveSnapshot.toRestore;
+            }
+            tlsSnapshot.set(nextActiveSnapshot);
         }
     }
 
@@ -45,39 +60,6 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
         if (snapshot == null) {
             return null;
         }
-        return snapshot.span();
-    }
-
-    @Override
-    public Span activate(Snapshot snapshot) {
-        if (!(snapshot instanceof MDCSnapshot)) {
-            throw new IllegalArgumentException("activate() expected MDCSnapshot");
-        }
-        ((MDCSnapshot) snapshot).setToRestore(tlsSnapshot.get());
-        tlsSnapshot.set((MDCSnapshot)snapshot);
-        return snapshot.span();
-    }
-
-    @Override
-    public void deactivate(Snapshot snapshot) {
-        if (!(snapshot instanceof MDCSnapshot)) {
-            throw new IllegalArgumentException("deactivate() expected MDCSnapshot");
-        }
-        if (snapshot.span() != null) {
-            snapshot.span().decRef();
-        }
-
-        if (tlsSnapshot.get() != snapshot) {
-            // do nothing
-            return;
-        }
-        MDCSnapshot nextActiveSnapshot = ((MDCSnapshot)snapshot).toRestore();
-        while (nextActiveSnapshot != null) {
-            if (!nextActiveSnapshot.span().isFinished()) {
-                break;
-            }
-            nextActiveSnapshot = nextActiveSnapshot.toRestore();
-        }
-        tlsSnapshot.set(nextActiveSnapshot);
+        return snapshot.span;
     }
 }

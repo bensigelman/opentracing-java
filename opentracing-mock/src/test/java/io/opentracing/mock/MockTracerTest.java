@@ -67,7 +67,8 @@ public class MockTracerTest {
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
         Span parent = tracer.buildSpan("parent").start();
-        tracer.activeSpanManager().activate(tracer.activeSpanManager().snapshot(parent));
+        ActiveSpanManager.Snapshot parentSnapshot = tracer.activeSpanManager().snapshot(parent);
+        parentSnapshot.activate();
         parent.incRef();
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
@@ -78,7 +79,7 @@ public class MockTracerTest {
                 public void run() {
                     final Span child = tracer.buildSpan("child_" + j).start();
                     ActiveSpanManager.Snapshot childSnapshot = tracer.activeSpanManager().snapshot(child);
-                    tracer.activeSpanManager().activate(childSnapshot);
+                    childSnapshot.activate();
                     try {
                         Thread.currentThread().sleep(1000);
                     } catch (InterruptedException e) {
@@ -98,7 +99,7 @@ public class MockTracerTest {
                     logger.info("submitting");
                     subfutures.add(otExecutor.submit(r));
                     logger.info("deactivating");
-                    tracer.activeSpanManager().deactivate(childSnapshot);
+                    childSnapshot.deactivate();
                 }
             }));
         }
@@ -121,7 +122,7 @@ public class MockTracerTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        parent.finish();
+        parentSnapshot.deactivate();
 
         List<MockSpan> finishedSpans = tracer.finishedSpans();
 
