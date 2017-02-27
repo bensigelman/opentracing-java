@@ -1,17 +1,16 @@
 package io.opentracing;
 
 import org.slf4j.MDC;
-import sun.awt.image.ImageWatched;
 
 import java.util.Map;
 
 /**
  * XXX: comment
  */
-public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
+public class MDCSpanManager implements SpanManager {
     private final ThreadLocal<MDCSnapshot> tlsSnapshot = new ThreadLocal<MDCSnapshot>();
 
-    class MDCSnapshot implements ActiveSpanManager.Snapshot {
+    class MDCSnapshot implements SpanClosure {
         private final Map<String, String> mdcContext;
         private final Span span;
         private MDCSnapshot toRestore = null;
@@ -50,7 +49,11 @@ public class MDCActiveSpanManager implements io.opentracing.ActiveSpanManager {
     }
 
     @Override
-    public MDCSnapshot snapshot(Span span) {
+    public MDCSnapshot captureActive() {
+        return new MDCSnapshot(active());
+    }
+    @Override
+    public MDCSnapshot captureWithSpan(Span span) {
         return new MDCSnapshot(span);
     }
 

@@ -13,8 +13,7 @@
  */
 package io.opentracing.impl;
 
-import io.opentracing.ActiveSpanManager;
-import io.opentracing.Span;
+import io.opentracing.SpanManager;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Extractor;
@@ -30,7 +29,7 @@ abstract class AbstractTracer implements Tracer {
     static final boolean BAGGAGE_ENABLED = !Boolean.getBoolean("opentracing.propagation.dropBaggage");
 
     private final PropagationRegistry registry = new PropagationRegistry();
-    private ActiveSpanManager manager;
+    private SpanManager manager;
 
     protected AbstractTracer() {
         registry.register(Format.Builtin.TEXT_MAP, new TextMapInjectorImpl(this));
@@ -39,13 +38,12 @@ abstract class AbstractTracer implements Tracer {
 
     abstract AbstractSpanBuilder createSpanBuilder(String operationName);
 
-    @Override
-    public void setActiveSpanManager(ActiveSpanManager manager) {
+    public void setSpanManager(SpanManager manager) {
         this.manager = manager;
     }
 
     @Override
-    public ActiveSpanManager activeSpanManager() {
+    public SpanManager activeSpanManager() {
         return this.manager;
     }
 

@@ -1,39 +1,38 @@
 package io.opentracing.concurrent;
 
-import io.opentracing.ActiveSpanManager;
+import io.opentracing.SpanManager;
 import io.opentracing.Span;
-import io.opentracing.Tracer;
 import io.opentracing.impl.GlobalTracer;
 
 import java.util.concurrent.Callable;
 
 public class TracedCallable<T> implements Callable<T> {
-    private ActiveSpanManager.Snapshot snapshot;
-    private ActiveSpanManager manager;
+    private SpanManager.SpanClosure spanClosure;
+    private SpanManager manager;
     private Callable<T> callable;
 
     public TracedCallable(Callable<T> callable) {
         this(callable, GlobalTracer.get().activeSpanManager());
     }
 
-    public TracedCallable(Callable<T> callable, ActiveSpanManager manager) {
+    public TracedCallable(Callable<T> callable, SpanManager manager) {
         this(callable, manager.active(), manager);
     }
 
-    public TracedCallable(Callable<T> callable, Span span, ActiveSpanManager manager) {
+    public TracedCallable(Callable<T> callable, Span span, SpanManager manager) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable= callable;
         this.manager = manager;
-        this.snapshot = manager.snapshot(span);
+        this.spanClosure = manager.captureActive();
         span.incRef();
     }
 
     public T call() throws Exception {
-        final Span span = snapshot.activate();
+        final Span span = spanClosure.activate();
         try {
             return callable.call();
         } finally {
-            snapshot.deactivate();
+            spanClosure.deactivate();
         }
     }
 }

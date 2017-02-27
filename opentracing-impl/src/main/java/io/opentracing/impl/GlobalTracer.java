@@ -116,13 +116,12 @@ public final class GlobalTracer implements Tracer {
         return lazyTracer().buildSpan(operationName);
     }
 
-    @Override
-    public void setActiveSpanManager(ActiveSpanManager mgr) {
-        lazyTracer().setActiveSpanManager(mgr);
+    public void setSpanManager(SpanManager mgr) {
+        lazyTracer().setSpanManager(mgr);
     }
 
     @Override
-    public ActiveSpanManager activeSpanManager() {
+    public SpanManager activeSpanManager() {
         return lazyTracer().activeSpanManager();
     }
 

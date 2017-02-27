@@ -23,9 +23,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import io.opentracing.*;
-import io.opentracing.concurrent.TracedCallable;
 import io.opentracing.concurrent.TracedExecutorService;
-import io.opentracing.concurrent.TracedRunnable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,7 +46,7 @@ public class MockTracerTest {
         logger.info("testing: {}", MDC.getCopyOfContextMap().toString());
 
         final MockTracer tracer = new MockTracer();
-        tracer.setActiveSpanManager(new MDCActiveSpanManager());
+        tracer.setSpanManager(new MDCSpanManager());
 
         /*
         Span par = tracer.buildSpan("parent").start();
@@ -67,8 +65,8 @@ public class MockTracerTest {
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
         Span parent = tracer.buildSpan("parent").start();
-        ActiveSpanManager.Snapshot parentSnapshot = tracer.activeSpanManager().snapshot(parent);
-        parentSnapshot.activate();
+        SpanManager.SpanClosure parentSpanClosure = tracer.activeSpanManager().captureWithSpan(parent);
+        parentSpanClosure.activate();
         parent.incRef();
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
@@ -78,8 +76,8 @@ public class MockTracerTest {
                 @Override
                 public void run() {
                     final Span child = tracer.buildSpan("child_" + j).start();
-                    ActiveSpanManager.Snapshot childSnapshot = tracer.activeSpanManager().snapshot(child);
-                    childSnapshot.activate();
+                    SpanManager.SpanClosure childSpanClosure = tracer.activeSpanManager().captureWithSpan(child);
+                    childSpanClosure.activate();
                     try {
                         Thread.currentThread().sleep(1000);
                     } catch (InterruptedException e) {
@@ -99,7 +97,7 @@ public class MockTracerTest {
                     logger.info("submitting");
                     subfutures.add(otExecutor.submit(r));
                     logger.info("deactivating");
-                    childSnapshot.deactivate();
+                    childSpanClosure.deactivate();
                 }
             }));
         }
@@ -122,7 +120,7 @@ public class MockTracerTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        parentSnapshot.deactivate();
+        parentSpanClosure.deactivate();
 
         List<MockSpan> finishedSpans = tracer.finishedSpans();
 

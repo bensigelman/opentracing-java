@@ -16,7 +16,6 @@ package io.opentracing.mock;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.opentracing.ActiveSpanManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 
