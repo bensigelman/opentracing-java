@@ -41,8 +41,8 @@ public interface Tracer {
    */
   SpanBuilder buildSpan(String operationName);
 
-  void setActiveSpanManager(ActiveSpanManager mgr);
-  ActiveSpanManager activeSpanManager();
+  void setSpanManager(SpanManager mgr);
+  SpanManager activeSpanManager();
 
   /**
    * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -92,7 +92,7 @@ public interface Tracer {
   <C> SpanContext extract(Format<C> format, C carrier);
 
   // XXX(bhs): could make this an abstract class. In any case, by default a SpanBuilder will have an asChildOf pointer
-  // to the ActiveSpanManager's active Span's SpanContext.
+  // to the SpanManager's active Span's SpanContext.
   interface SpanBuilder extends SpanContext {
 
       /**
@@ -130,6 +130,7 @@ public interface Tracer {
       SpanBuilder withStartTimestamp(long microseconds);
 
       /** Returns the started Span. */
+      // XXX: should this return a SpanClosure?
       Span start();
 
   }

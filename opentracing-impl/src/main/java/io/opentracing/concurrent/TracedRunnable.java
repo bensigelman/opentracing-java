@@ -1,15 +1,14 @@
 package io.opentracing.concurrent;
 
-import io.opentracing.ActiveSpanManager;
+import io.opentracing.SpanManager;
 import io.opentracing.Span;
-import io.opentracing.Tracer;
 import io.opentracing.impl.GlobalTracer;
 
 
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
-    private ActiveSpanManager manager;
-    private ActiveSpanManager.Snapshot snapshot;
+    private SpanManager manager;
+    private SpanManager.SpanClosure spanClosure;
 
     public TracedRunnable(Runnable runnable) {
         this(runnable, GlobalTracer.get().activeSpanManager());
@@ -19,25 +18,25 @@ public class TracedRunnable implements Runnable {
         this(runnable, span, GlobalTracer.get().activeSpanManager());
     }
 
-    public TracedRunnable(Runnable runnable, ActiveSpanManager manager) {
+    public TracedRunnable(Runnable runnable, SpanManager manager) {
         this(runnable, manager.active(), manager);
     }
 
-    public TracedRunnable(Runnable runnable, Span span, ActiveSpanManager manager) {
+    public TracedRunnable(Runnable runnable, Span span, SpanManager manager) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
         this.manager = manager;
-        this.snapshot = manager.snapshot(span);
+        this.spanClosure = manager.captureActive();
         span.incRef();
     }
 
     @Override
     public void run() {
-        final Span span = this.snapshot.activate();
+        final Span span = this.spanClosure.activate();
         try {
             runnable.run();
         } finally {
-            this.snapshot.deactivate();
+            this.spanClosure.deactivate();
         }
     }
 }

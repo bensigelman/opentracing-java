@@ -35,7 +35,7 @@ import io.opentracing.propagation.TextMap;
 public class MockTracer implements Tracer {
     private List<MockSpan> finishedSpans = new ArrayList<>();
     private final Propagator propagator;
-    private ActiveSpanManager activeSpanManager;
+    private SpanManager spanManager;
 
     public MockTracer() {
         this(Propagator.PRINTER);
@@ -145,8 +145,8 @@ public class MockTracer implements Tracer {
     @Override
     public SpanBuilder buildSpan(String operationName) {
         SpanBuilder sb = new SpanBuilder(operationName);
-        if (this.activeSpanManager != null) {
-            Span active = this.activeSpanManager.active();
+        if (this.spanManager != null) {
+            Span active = this.spanManager.active();
             if (active != null) {
                 sb.asChildOf(active.context());
             }
@@ -154,14 +154,13 @@ public class MockTracer implements Tracer {
         return sb;
     }
 
-    @Override
-    public void setActiveSpanManager(ActiveSpanManager mgr) {
-        this.activeSpanManager = mgr;
+    public void setSpanManager(SpanManager mgr) {
+        this.spanManager = mgr;
     }
 
     @Override
-    public ActiveSpanManager activeSpanManager() {
-        return activeSpanManager;
+    public SpanManager activeSpanManager() {
+        return spanManager;
     }
 
     @Override
@@ -238,9 +237,9 @@ public class MockTracer implements Tracer {
             }
             Span rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
             /*
-            if (MockTracer.this.activeSpanManager != null) {
-                MockTracer.this.activeSpanManager.activate(
-                        MockTracer.this.activeSpanManager.snapshot(rval));
+            if (MockTracer.this.spanManager != null) {
+                MockTracer.this.spanManager.activate(
+                        MockTracer.this.spanManager.captureActive(rval));
             }
             */
             rval.incRef();

@@ -24,11 +24,10 @@ final class NoopTracerImpl implements NoopTracer {
     @Override
     public SpanBuilder buildSpan(String operationName) { return NoopSpanBuilderImpl.INSTANCE; }
 
-    @Override
-    public void setActiveSpanManager(ActiveSpanManager mgr) {}
+    public void setSpanManager(SpanManager mgr) {}
 
     @Override
-    public ActiveSpanManager activeSpanManager() { return null; }
+    public SpanManager activeSpanManager() { return null; }
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {}
