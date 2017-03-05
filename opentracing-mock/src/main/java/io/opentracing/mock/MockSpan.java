@@ -100,20 +100,6 @@ public final class MockSpan implements Span {
     }
 
     @Override
-    public void incRef() {
-        System.out.println("incRef: " + refCount.get() + " :: " + this.operationName);
-        refCount.incrementAndGet();
-    }
-
-    @Override
-    public void decRef() {
-        System.out.println("decRef: " + refCount.get() + " :: " + this.operationName);
-        if (refCount.decrementAndGet() == 0) {
-            this.finish();
-        };
-    }
-
-    @Override
     public void finish() {
         this.finish(nowMicros());
     }

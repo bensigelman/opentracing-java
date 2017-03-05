@@ -47,17 +47,6 @@ abstract class AbstractSpan implements Span, SpanContext {
     }
 
     @Override
-    public void incRef() {
-        refCount.incrementAndGet();
-    }
-    @Override
-    public void decRef() {
-        if (refCount.decrementAndGet() == 0) {
-            this.finish();
-        }
-    }
-
-    @Override
     public final SpanContext context() {
         return this;
     }
