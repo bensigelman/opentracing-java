@@ -21,10 +21,9 @@ public class TracedCallable<T> implements Callable<T> {
 
     public TracedCallable(Callable<T> callable, Span span, SpanManager manager) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
-        this.callable= callable;
+        this.callable = callable;
         this.manager = manager;
         this.spanClosure = manager.captureActive();
-        span.incRef();
     }
 
     public T call() throws Exception {
@@ -32,7 +31,7 @@ public class TracedCallable<T> implements Callable<T> {
         try {
             return callable.call();
         } finally {
-            spanClosure.deactivate();
+            spanClosure.deactivate(false);
         }
     }
 }

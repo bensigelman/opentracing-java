@@ -67,7 +67,6 @@ public class MockTracerTest {
         Span parent = tracer.buildSpan("parent").start();
         SpanManager.SpanClosure parentSpanClosure = tracer.activeSpanManager().captureWithSpan(parent);
         parentSpanClosure.activate();
-        parent.incRef();
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -97,7 +96,7 @@ public class MockTracerTest {
                     logger.info("submitting");
                     subfutures.add(otExecutor.submit(r));
                     logger.info("deactivating");
-                    childSpanClosure.deactivate();
+                    childSpanClosure.deactivate(true);
                 }
             }));
         }
@@ -120,7 +119,7 @@ public class MockTracerTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        parentSpanClosure.deactivate();
+        parentSpanClosure.deactivate(true);
 
         List<MockSpan> finishedSpans = tracer.finishedSpans();
 

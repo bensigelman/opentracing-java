@@ -242,7 +242,6 @@ public class MockTracer implements Tracer {
                         MockTracer.this.spanManager.captureActive(rval));
             }
             */
-            rval.incRef();
             return rval;
         }
 

@@ -25,12 +25,6 @@ final class NoopSpanImpl implements NoopSpan {
     public SpanContext context() { return NoopSpanContextImpl.INSTANCE; }
 
     @Override
-    public void incRef() { }
-
-    @Override
-    public void decRef() { }
-
-    @Override
     public void finish() {}
 
     @Override

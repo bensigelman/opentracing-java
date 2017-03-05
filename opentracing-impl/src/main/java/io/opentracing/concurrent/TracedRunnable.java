@@ -27,7 +27,6 @@ public class TracedRunnable implements Runnable {
         this.runnable = runnable;
         this.manager = manager;
         this.spanClosure = manager.captureActive();
-        span.incRef();
     }
 
     @Override
@@ -36,7 +35,7 @@ public class TracedRunnable implements Runnable {
         try {
             runnable.run();
         } finally {
-            this.spanClosure.deactivate();
+            this.spanClosure.deactivate(false);
         }
     }
 }

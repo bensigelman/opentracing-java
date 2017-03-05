@@ -28,9 +28,9 @@ public class MDCSpanManager implements SpanManager {
         }
 
         @Override
-        public void deactivate() {
-            if (span != null) {
-                span.decRef();
+        public void deactivate(boolean finishSpan) {
+            if (span != null && finishSpan) {
+                span.finish();
             }
 
             if (tlsSnapshot.get() != this) {
