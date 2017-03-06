@@ -1,5 +1,7 @@
-package io.opentracing;
+package io.opentracing.mdcdemo;
 
+import io.opentracing.Span;
+import io.opentracing.SpanManager;
 import org.slf4j.MDC;
 
 import java.util.Map;
