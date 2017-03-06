@@ -1,4 +1,4 @@
-package io.opentracing.concurrent;
+package io.opentracing.mdcdemo;
 
 import io.opentracing.SpanManager;
 import io.opentracing.impl.GlobalTracer;
