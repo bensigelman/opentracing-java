@@ -14,34 +14,12 @@ import java.util.concurrent.*;
 
 public class MDCDemo {
     public static void main(String[] args) {
-        doEverything();
-    }
-
-    public static void doEverything() {
         org.apache.log4j.BasicConfigurator.configure();
         final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
-        MDC.put("key1", "val1");
-        Map<String, String> ctxMap = MDC.getCopyOfContextMap();
-        MDC.put("key2", "val2");
-        MDC.setContextMap(ctxMap);
-        logger.info("testing: {}", MDC.getCopyOfContextMap().toString());
+        MDC.put("mdcKey", "mdcVal");
 
         final MockTracer tracer = new MockTracer();
         tracer.setSpanManager(new MDCSpanManager());
-
-        /*
-        Span par = tracer.buildSpan("parent").start();
-        Span childA = tracer.buildSpan("childA").start();
-        childA.finish();
-        par.finish();
-
-        List<MockSpan> finishedSpans = tracer.finishedSpans();
-
-        for (MockSpan span : finishedSpans) {
-            logger.info("finished Span. {} :: {} ({})", span.context().traceId(), span.context().spanId(), span.parentId());
-        }
-        tracer.reset();
-        */
 
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
