@@ -236,12 +236,9 @@ public class MockTracer implements Tracer {
                 this.startMicros = MockSpan.nowMicros();
             }
             Span rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
-            /*
             if (MockTracer.this.spanManager != null) {
-                MockTracer.this.spanManager.activate(
-                        MockTracer.this.spanManager.captureActive(rval));
+                MockTracer.this.spanManager.capture(rval).activate();
             }
-            */
             return rval;
         }
 
