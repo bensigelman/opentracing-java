@@ -54,8 +54,9 @@ public class MDCSpanManager implements SpanManager {
     public MDCSnapshot captureActive() {
         return new MDCSnapshot(active());
     }
+
     @Override
-    public MDCSnapshot captureWithSpan(Span span) {
+    public SpanClosure capture(Span span) {
         return new MDCSnapshot(span);
     }
 

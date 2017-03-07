@@ -14,6 +14,8 @@ public interface SpanManager {
         /**
          * Make the Span encapsulated by this SpanClosure active and return it.
          *
+         * XXX: handle the case where the Span is null.
+         *
          * @see SpanManager#captureActive()
          * @return the newly-activated Span
          */
@@ -30,15 +32,8 @@ public interface SpanManager {
      */
     Span active();
 
-    /**
-     * Capture the active() Span (even if null) via captureWithSpan().
-     *
-     * @see SpanManager#active()
-     * @see SpanManager#captureWithSpan(Span)
-     */
-    SpanClosure captureActive();
-    /**
-     * Capture any SpanManager-specific context (e.g., MDC context) along with the given Span (even if null) and
+     /**
+     * Capture any SpanManager-specific context (e.g., MDC context) along with the active Span (even if null) and
      * encapsulate it in a SpanClosure for activation in the future, perhaps in a different thread or on a different
      * executor.
      *
@@ -47,9 +42,11 @@ public interface SpanManager {
      *
      * @see SpanManager.SpanClosure
      *
-     * @param span the Span to associate with any SpanManager-specific active context
      * @return a SpanClosure that represents the active Span and any other SpanManager-specific context, even if the
      *     active Span is null.
      */
-    SpanClosure captureWithSpan(Span span);
+    SpanClosure captureActive();
+
+    // XXX: comment
+    SpanClosure capture(Span span);
 }
