@@ -2,6 +2,7 @@ package io.opentracing.mdcdemo;
 
 import io.opentracing.Span;
 import io.opentracing.SpanManager;
+import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import org.slf4j.Logger;
@@ -13,13 +14,27 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 public class MDCDemo {
-    public static void main(String[] args) {
-        org.apache.log4j.BasicConfigurator.configure();
-        final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
-        MDC.put("mdcKey", "mdcVal");
+    Tracer tracer;
 
-        final MockTracer tracer = new MockTracer();
-        tracer.setSpanManager(new MDCSpanManager());
+    private MDCDemo(Tracer tracer) {
+        this.tracer = tracer;
+    }
+
+    public void trivialSpan() {
+        Span span = this.tracer.buildSpan("trivial").start();
+        span.finish();
+    }
+
+    public void trivialChild() {
+        Span parent = this.tracer.buildSpan("trivialParent").start();
+        // The child will automatically know about the parent.
+        Span child = this.tracer.buildSpan("trivialChild").start();
+        child.finish();
+        parent.finish();
+    }
+
+    public void asyncSpans() {
+        final Tracer tracer = this.tracer; // save typing
 
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
@@ -42,20 +57,18 @@ public class MDCDemo {
                         e.printStackTrace();
                     }
                     child.log("awoke");
-                    logger.info("defining");
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
                             Span active = tracer.activeSpanManager().active();
                             active.log("awoke again");
-                            Span grandchild = tracer.buildSpan("grandchild").start();
+                            Span grandchild = tracer.buildSpan("grandchild_" + j).start();
                             grandchild.finish();
+                            active.finish();
                         }
                     };
-                    logger.info("submitting");
                     subfutures.add(otExecutor.submit(r));
-                    logger.info("deactivating");
-                    childSpanClosure.deactivate(true);
+                    childSpanClosure.deactivate(false);
                 }
             }));
         }
@@ -79,6 +92,19 @@ public class MDCDemo {
             e.printStackTrace();
         }
         parentSpanClosure.deactivate(true);
+    }
+
+    public static void main(String[] args) {
+        org.apache.log4j.BasicConfigurator.configure();
+        final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
+        MDC.put("mdcKey", "mdcVal");
+
+        final MockTracer tracer = new MockTracer(new MDCSpanManager());
+
+        MDCDemo demo = new MDCDemo(tracer);
+        demo.trivialSpan();
+        demo.trivialChild();
+        demo.asyncSpans();
 
         List<MockSpan> finishedSpans = tracer.finishedSpans();
 

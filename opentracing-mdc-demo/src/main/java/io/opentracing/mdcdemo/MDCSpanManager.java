@@ -7,7 +7,8 @@ import org.slf4j.MDC;
 import java.util.Map;
 
 /**
- * XXX: comment
+ * MDCSpanManager illustrates the core SpanManager concepts and capabilities to a first approximation. Not
+ * production-quality code.
  */
 public class MDCSpanManager implements SpanManager {
     private final ThreadLocal<MDCSnapshot> tlsSnapshot = new ThreadLocal<MDCSnapshot>();
@@ -36,17 +37,12 @@ public class MDCSpanManager implements SpanManager {
             }
 
             if (tlsSnapshot.get() != this) {
-                // do nothing
+                // This probably shouldn't happen.
+                //
+                // XXX: log or throw something here?
                 return;
             }
-            MDCSnapshot nextActiveSnapshot = toRestore;
-            while (nextActiveSnapshot != null) {
-                if (!nextActiveSnapshot.span.isFinished()) {
-                    break;
-                }
-                nextActiveSnapshot = nextActiveSnapshot.toRestore;
-            }
-            tlsSnapshot.set(nextActiveSnapshot);
+            tlsSnapshot.set(toRestore);
         }
     }
 
@@ -67,5 +63,22 @@ public class MDCSpanManager implements SpanManager {
             return null;
         }
         return snapshot.span;
+    }
+
+    @Override
+    public void onFinish(Span span) {
+        MDCSnapshot snapshot = tlsSnapshot.get();
+        MDCSnapshot prevSnapshot = null;
+        while (snapshot != null) {
+            if (snapshot.span == span) {
+               if (prevSnapshot == null) {
+                   tlsSnapshot.set(snapshot.toRestore);
+               } else {
+                   prevSnapshot.toRestore = snapshot.toRestore;
+               }
+            }
+            prevSnapshot = snapshot;
+            snapshot = snapshot.toRestore;
+        }
     }
 }

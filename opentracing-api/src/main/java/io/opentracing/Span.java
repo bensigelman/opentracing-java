@@ -41,9 +41,6 @@ public interface Span extends Closeable {
      */
     void finish();
 
-    // XXX: comment
-    boolean isFinished();
-
     /**
      * Sets an explicit end timestamp and records the span.
      *

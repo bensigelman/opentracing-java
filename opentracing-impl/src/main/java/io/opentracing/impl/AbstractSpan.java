@@ -58,11 +58,6 @@ abstract class AbstractSpan implements Span, SpanContext {
     }
 
     @Override
-    public boolean isFinished() {
-        return null != duration;
-    }
-
-    @Override
     public void finish(long finishMicros) {
         long finishEpochSeconds = TimeUnit.MICROSECONDS.toSeconds(finishMicros);
         long nanos = TimeUnit.MICROSECONDS.toNanos(finishMicros) - TimeUnit.SECONDS.toNanos(finishEpochSeconds);
