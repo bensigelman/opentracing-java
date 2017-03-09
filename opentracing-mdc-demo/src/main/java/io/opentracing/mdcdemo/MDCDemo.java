@@ -10,7 +10,6 @@ import org.slf4j.MDC;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 
 public class MDCDemo {
@@ -101,14 +100,16 @@ public class MDCDemo {
 
         final MockTracer tracer = new MockTracer(new MDCSpanManager());
 
-        MDCDemo demo = new MDCDemo(tracer);
-        demo.trivialSpan();
-        demo.trivialChild();
-        demo.asyncSpans();
+        // Do stuff with the MockTracer.
+        {
+            MDCDemo demo = new MDCDemo(tracer);
+            demo.trivialSpan();
+            demo.trivialChild();
+            demo.asyncSpans();
+        }
 
+        // Print out all mock-Spans
         List<MockSpan> finishedSpans = tracer.finishedSpans();
-
-        logger.info("DONE SLEEPING");
         for (MockSpan span : finishedSpans) {
             logger.info("finished Span '{}'. trace={}, span={}, parent={}", span.operationName(), span.context().traceId(), span.context().spanId(), span.parentId());
         }
