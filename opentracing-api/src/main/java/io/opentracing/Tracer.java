@@ -23,6 +23,9 @@ public interface Tracer {
   /**
    * Return a new SpanBuilder for a Span with the given `operationName`.
    *
+   * <p>If there is an active Span according to the activeSpanManager(),
+   * buildSpan will automatically have an asChildOf() reference to same.
+   *
    * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
    *
    * <p>A contrived example:
@@ -41,7 +44,6 @@ public interface Tracer {
    */
   SpanBuilder buildSpan(String operationName);
 
-  void setSpanManager(SpanManager mgr);
   SpanManager activeSpanManager();
 
   /**
@@ -91,8 +93,7 @@ public interface Tracer {
    */
   <C> SpanContext extract(Format<C> format, C carrier);
 
-  // XXX(bhs): could make this an abstract class. In any case, by default a SpanBuilder will have an asChildOf pointer
-  // to the SpanManager's active Span's SpanContext.
+
   interface SpanBuilder extends SpanContext {
 
       /**
@@ -130,7 +131,6 @@ public interface Tracer {
       SpanBuilder withStartTimestamp(long microseconds);
 
       /** Returns the started Span. */
-      // XXX: should this return a SpanClosure?
       Span start();
 
   }
