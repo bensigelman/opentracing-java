@@ -1,5 +1,9 @@
 package io.opentracing;
 
+/**
+ * SpanManager allows an existing (possibly thread-local-aware) execution context provider to also manage the current
+ * active OpenTracing span.
+ */
 public interface SpanManager {
 
     /**
@@ -7,7 +11,8 @@ public interface SpanManager {
      * "closure" (or period of Span activity) has finished.
      *
      * Most users do not directly interact with SpanClosure, activate(), or deactivate(), but rather use
-     * SpanManager-aware Runnables/Callables/Executors.
+     * SpanManager-aware Runnables/Callables/Executors. Those higher-level primitives need not be defined within the
+     * OpenTracing core API.
      */
     interface SpanClosure {
 
