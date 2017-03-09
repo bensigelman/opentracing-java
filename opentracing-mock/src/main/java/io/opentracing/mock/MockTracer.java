@@ -41,6 +41,11 @@ public class MockTracer implements Tracer {
         this(Propagator.PRINTER);
     }
 
+    public MockTracer(SpanManager manager) {
+        this(Propagator.PRINTER);
+        this.spanManager = manager;
+    }
+
     /**
      * Create a new MockTracer that passes through any calls to inject() and/or extract().
      */
@@ -154,10 +159,6 @@ public class MockTracer implements Tracer {
         return sb;
     }
 
-    public void setSpanManager(SpanManager mgr) {
-        this.spanManager = mgr;
-    }
-
     @Override
     public SpanManager activeSpanManager() {
         return spanManager;
@@ -235,7 +236,7 @@ public class MockTracer implements Tracer {
             if (this.startMicros == 0) {
                 this.startMicros = MockSpan.nowMicros();
             }
-            Span rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
+            MockSpan rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
             if (MockTracer.this.spanManager != null) {
                 MockTracer.this.spanManager.capture(rval).activate();
             }

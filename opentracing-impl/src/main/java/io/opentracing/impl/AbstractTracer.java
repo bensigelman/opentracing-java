@@ -31,16 +31,18 @@ abstract class AbstractTracer implements Tracer {
     private final PropagationRegistry registry = new PropagationRegistry();
     private SpanManager manager;
 
+
     protected AbstractTracer() {
+        this(null);  // SpanManager is optional for this spike
+    }
+
+    protected AbstractTracer(SpanManager manager) {
+        this.manager = manager;
         registry.register(Format.Builtin.TEXT_MAP, new TextMapInjectorImpl(this));
         registry.register(Format.Builtin.TEXT_MAP, new TextMapExtractorImpl(this));
     }
 
     abstract AbstractSpanBuilder createSpanBuilder(String operationName);
-
-    public void setSpanManager(SpanManager manager) {
-        this.manager = manager;
-    }
 
     @Override
     public SpanManager activeSpanManager() {

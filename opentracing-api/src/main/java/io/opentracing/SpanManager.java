@@ -49,4 +49,6 @@ public interface SpanManager {
 
     // XXX: comment
     SpanClosure capture(Span span);
+
+    void onFinish(Span span);
 }

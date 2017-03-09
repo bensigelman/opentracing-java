@@ -31,9 +31,6 @@ final class NoopSpanImpl implements NoopSpan {
     public void finish(long finishMicros) {}
 
     @Override
-    public boolean isFinished() { return true; }
-
-    @Override
     public void close() { finish(); }
 
     @Override

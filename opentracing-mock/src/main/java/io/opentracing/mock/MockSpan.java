@@ -108,17 +108,12 @@ public final class MockSpan implements Span {
     public synchronized void finish(long finishMicros) {
         finishedCheck("Finishing already finished span");
 
-        if (this.mockTracer.getActiveSpanManager() != null) {
-            this.mockTracer.getActiveSpanManager().deactivate(this.snapshot);
-        }
         this.finishMicros = finishMicros;
         this.mockTracer.appendFinishedSpan(this);
         this.finished = true;
-    }
-
-    @Override
-    public synchronized boolean isFinished() {
-        return finished;
+        if (this.mockTracer.activeSpanManager() != null) {
+            this.mockTracer.activeSpanManager().onFinish(this);
+        }
     }
 
     @Override

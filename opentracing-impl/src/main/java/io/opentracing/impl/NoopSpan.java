@@ -28,11 +28,6 @@ final class NoopSpan extends AbstractSpan implements io.opentracing.NoopSpan, No
     }
 
     @Override
-    public boolean isFinished() {
-        return true;
-    }
-
-    @Override
     public void finish(long finishMicros) {
     }
 

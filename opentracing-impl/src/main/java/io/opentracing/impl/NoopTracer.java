@@ -23,9 +23,6 @@ final class NoopTracer extends AbstractTracer implements io.opentracing.NoopTrac
     private static final NoopTracer INSTANCE = new NoopTracer();
 
     @Override
-    public void setSpanManager(SpanManager mgr) {}
-
-    @Override
     public SpanManager activeSpanManager() { return null; }
 
     @Override
