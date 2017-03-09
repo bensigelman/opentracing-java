@@ -14,7 +14,7 @@ public interface SpanManager {
         /**
          * Make the Span encapsulated by this SpanClosure active and return it.
          *
-         * XXX: handle the case where the Span is null.
+         * XXX: think harder about the returned Span being null.
          *
          * @see SpanManager#captureActive()
          * @return the newly-activated Span
@@ -47,8 +47,17 @@ public interface SpanManager {
      */
     SpanClosure captureActive();
 
-    // XXX: comment
+    /**
+     * Explicitly capture the given Span and any active state (e.g., MDC state) about the current execution context.
+     *
+     * @param span
+     * @return a SpanClosure that represents the active Span and any other SpanManager-specific context, even if the
+     *     active Span is null.
+     */
     SpanClosure capture(Span span);
 
+    /**
+     * Tell the SpanManager that a particular Span has finished (and update any structures accordingly).
+     */
     void onFinish(Span span);
 }
