@@ -38,7 +38,6 @@ public final class MockSpan implements Span {
     private final Map<String, Object> tags;
     private final List<LogEntry> logEntries = new ArrayList<>();
     private String operationName;
-    private final AtomicLong refCount = new AtomicLong(0);
 
     private final List<RuntimeException> errors = new ArrayList<>();
 
