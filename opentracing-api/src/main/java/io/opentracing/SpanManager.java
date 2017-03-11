@@ -16,7 +16,7 @@ public interface SpanManager {
      *
      * @see SpanManager#captureActive()
      */
-    interface SpanClosure {
+    interface SpanClosure extends AutoCloseable {
 
         /**
          * Make the Span encapsulated by this SpanClosure active and return it.

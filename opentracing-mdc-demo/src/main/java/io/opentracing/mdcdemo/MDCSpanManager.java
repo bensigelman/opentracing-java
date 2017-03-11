@@ -31,6 +31,11 @@ public class MDCSpanManager implements SpanManager {
         }
 
         @Override
+        public void close() {
+            this.deactivate(true);
+        }
+
+        @Override
         public Span span() {
             return span;
         }

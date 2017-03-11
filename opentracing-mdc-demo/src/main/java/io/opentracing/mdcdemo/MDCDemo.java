@@ -35,38 +35,49 @@ public class MDCDemo {
     public void asyncSpans() {
         final Tracer tracer = this.tracer; // save typing
 
+        // Create an ExecutorService and wrap it in a TracedExecutorService.
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
-        SpanManager.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate();
+
+        // Hacky lists of futures we wait for before exiting asyncSpans.
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            final int j = i;
-            futures.add(otExecutor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    SpanManager.SpanClosure childSpanClosure = tracer.buildSpan("child_" + j).startAndActivate();
-                    try {
-                        Thread.currentThread().sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+
+        // Create a parent SpanClosure for all of the async activity.
+        try (SpanManager.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate();) {
+
+            // Create 10 async children.
+            for (int i = 0; i < 10; i++) {
+                final int j = i;
+                futures.add(otExecutor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        // START child body
+
+                        try (SpanManager.SpanClosure childSpanClosure =
+                                     tracer.buildSpan("child_" + j).startAndActivate();) {
+                            Thread.currentThread().sleep(1000);
+                            childSpanClosure.span().log("awoke");
+                            Runnable r = new Runnable() {
+                                @Override
+                                public void run() {
+                                    Span active = tracer.activeSpanManager().active();
+                                    active.log("awoke again");
+                                    // Create a grandchild for each child.
+                                    Span grandchild = tracer.buildSpan("grandchild_" + j).start();
+                                    grandchild.finish();
+                                    active.finish();
+                                }
+                            };
+                            subfutures.add(otExecutor.submit(r));
+                        } catch (Exception e) { }
+
+                        // END child body
                     }
-                    tracer.activeSpanManager().active().log("awoke");
-                    Runnable r = new Runnable() {
-                        @Override
-                        public void run() {
-                            Span active = tracer.activeSpanManager().active();
-                            active.log("awoke again");
-                            Span grandchild = tracer.buildSpan("grandchild_" + j).start();
-                            grandchild.finish();
-                            active.finish();
-                        }
-                    };
-                    subfutures.add(otExecutor.submit(r));
-                    childSpanClosure.deactivate(false);
-                }
-            }));
-        }
+                }));
+            }
+        } catch (Exception e) { }
+
         try {
             for (Future<?> f : futures) {
                 f.get();
@@ -74,11 +85,7 @@ public class MDCDemo {
             for (Future<?> f : subfutures) {
                 f.get();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { }
 
         otExecutor.shutdown();
         try {
@@ -86,7 +93,6 @@ public class MDCDemo {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        parentSpanClosure.deactivate(true);
     }
 
     public static void main(String[] args) {
