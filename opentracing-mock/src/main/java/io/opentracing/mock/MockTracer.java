@@ -244,6 +244,12 @@ public class MockTracer implements Tracer {
         }
 
         @Override
+        public SpanManager.SpanClosure startAndActivate() {
+            MockSpan span = this.start();
+            return MockTracer.this.spanManager.capture(span);
+        }
+
+        @Override
         public Iterable<Map.Entry<String, String>> baggageItems() {
             if (firstParent == null) {
                 return Collections.EMPTY_MAP.entrySet();

@@ -31,6 +31,11 @@ public class MDCSpanManager implements SpanManager {
         }
 
         @Override
+        public Span span() {
+            return span;
+        }
+
+        @Override
         public void deactivate(boolean finishSpan) {
             if (span != null && finishSpan) {
                 span.finish();

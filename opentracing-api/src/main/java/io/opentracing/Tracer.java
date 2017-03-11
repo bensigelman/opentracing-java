@@ -133,5 +133,7 @@ public interface Tracer {
       /** Returns the started Span. */
       Span start();
 
+      SpanManager.SpanClosure startAndActivate();
+
   }
 }

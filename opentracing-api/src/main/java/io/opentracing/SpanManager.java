@@ -13,13 +13,15 @@ public interface SpanManager {
      * Most users do not directly interact with SpanClosure, activate(), or deactivate(), but rather use
      * SpanManager-aware Runnables/Callables/Executors. Those higher-level primitives need not be defined within the
      * OpenTracing core API.
+     *
+     * @see SpanManager#captureActive()
      */
     interface SpanClosure {
 
         /**
          * Make the Span encapsulated by this SpanClosure active and return it.
          *
-         * XXX: think harder about the returned Span being null.
+         * NOTE: It is an error to call activate() more than once on a single SpanClosure instance.
          *
          * @see SpanManager#captureActive()
          * @return the newly-activated Span
@@ -27,9 +29,17 @@ public interface SpanManager {
         Span activate();
 
         /**
+         * @return the encapsulated Span, or null if there isn't one.
+         */
+        Span span();
+
+        /**
          * End this active period for the Span previously returned by activate(). Finish the span iff finish=true.
+         *
+         * NOTE: It is an error to call deactivate() more than once on a single SpanClosure instance.
          */
         void deactivate(boolean finishSpan);
+
     }
 
     /**
