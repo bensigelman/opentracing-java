@@ -37,9 +37,7 @@ public class MDCDemo {
 
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanManager());
-        Span parent = tracer.buildSpan("parent").start();
-        SpanManager.SpanClosure parentSpanClosure = tracer.activeSpanManager().captureActive();
-        parentSpanClosure.activate();
+        SpanManager.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate();
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -47,15 +45,13 @@ public class MDCDemo {
             futures.add(otExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    final Span child = tracer.buildSpan("child_" + j).start();
-                    SpanManager.SpanClosure childSpanClosure = tracer.activeSpanManager().captureActive();
-                    childSpanClosure.activate();
+                    SpanManager.SpanClosure childSpanClosure = tracer.buildSpan("child_" + j).startAndActivate();
                     try {
                         Thread.currentThread().sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    child.log("awoke");
+                    tracer.activeSpanManager().active().log("awoke");
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
