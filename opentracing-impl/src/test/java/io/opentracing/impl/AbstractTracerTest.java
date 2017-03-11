@@ -133,6 +133,7 @@ public final class AbstractTracerTest {
     final class TestTracerImpl extends AbstractTracer {
 
         static final String OPERATION_NAME = "operation-name";
+        Span activeSpan;
 
         @Override
         public AbstractSpanBuilder createSpanBuilder(String operationName) {

@@ -20,40 +20,26 @@
     <parent>
         <groupId>io.opentracing</groupId>
         <artifactId>parent</artifactId>
-        <version>0.20.10-SNAPSHOT</version>
+        <version>0.20.8-SNAPSHOT</version>
     </parent>
 
-    <artifactId>opentracing-api</artifactId>
-    <name>OpenTracing API</name>
-    <description>OpenTracing Java API</description>
+    <artifactId>opentracing-mdc-demo</artifactId>
+    <name>OpenTracing-mdc-demo</name>
+    <description>OpenTracing MDC Demo</description>
 
     <properties>
         <main.basedir>${project.basedir}/..</main.basedir>
-        <main.java.version>1.7</main.java.version>
-        <main.signature.artifact>java17</main.signature.artifact>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opentracing-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.23</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.23</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opentracing-mock</artifactId>
         </dependency>
     </dependencies>
+
 </project>

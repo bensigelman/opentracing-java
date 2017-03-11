@@ -20,10 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import io.opentracing.References;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
+import io.opentracing.*;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 
@@ -38,9 +35,15 @@ import io.opentracing.propagation.TextMap;
 public class MockTracer implements Tracer {
     private List<MockSpan> finishedSpans = new ArrayList<>();
     private final Propagator propagator;
+    private SpanManager spanManager;
 
     public MockTracer() {
         this(Propagator.PRINTER);
+    }
+
+    public MockTracer(SpanManager manager) {
+        this(Propagator.PRINTER);
+        this.spanManager = manager;
     }
 
     /**
@@ -146,7 +149,19 @@ public class MockTracer implements Tracer {
 
     @Override
     public SpanBuilder buildSpan(String operationName) {
-        return new SpanBuilder(operationName);
+        SpanBuilder sb = new SpanBuilder(operationName);
+        if (this.spanManager != null) {
+            Span active = this.spanManager.active();
+            if (active != null) {
+                sb.asChildOf(active.context());
+            }
+        }
+        return sb;
+    }
+
+    @Override
+    public SpanManager activeSpanManager() {
+        return spanManager;
     }
 
     @Override
@@ -221,7 +236,17 @@ public class MockTracer implements Tracer {
             if (this.startMicros == 0) {
                 this.startMicros = MockSpan.nowMicros();
             }
-            return new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
+            MockSpan rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
+            if (MockTracer.this.spanManager != null) {
+                MockTracer.this.spanManager.capture(rval).activate();
+            }
+            return rval;
+        }
+
+        @Override
+        public SpanManager.SpanClosure startAndActivate() {
+            MockSpan span = this.start();
+            return MockTracer.this.spanManager.capture(span);
         }
 
         @Override

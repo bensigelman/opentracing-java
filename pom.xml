@@ -238,7 +238,7 @@
                     <createChecksum>true</createChecksum>
                 </configuration>
             </plugin>
-
+<!--
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -275,7 +275,7 @@
                     </execution>
                 </executions>
             </plugin>
-
+-->
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>${maven-release-plugin.version}</version>
