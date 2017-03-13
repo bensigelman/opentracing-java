@@ -27,7 +27,7 @@ final class NoopTracerImpl implements NoopTracer {
     public void setSpanManager(SpanScheduler mgr) {}
 
     @Override
-    public SpanScheduler activeSpanManager() { return null; }
+    public SpanScheduler activeSpanScheduler() { return null; }
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {}

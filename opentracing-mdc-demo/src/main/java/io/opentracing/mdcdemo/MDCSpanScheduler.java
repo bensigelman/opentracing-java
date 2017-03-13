@@ -62,7 +62,7 @@ public class MDCSpanScheduler implements SpanScheduler {
     }
 
     @Override
-    public SpanClosure capture(Span span) {
+    public SpanClosure onStart(Span span) {
         return new MDCSnapshot(span);
     }
 

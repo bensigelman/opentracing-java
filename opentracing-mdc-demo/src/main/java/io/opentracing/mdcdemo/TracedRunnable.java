@@ -11,11 +11,11 @@ public class TracedRunnable implements Runnable {
     private SpanScheduler.SpanClosure spanClosure;
 
     public TracedRunnable(Runnable runnable) {
-        this(runnable, GlobalTracer.get().activeSpanManager());
+        this(runnable, GlobalTracer.get().activeSpanScheduler());
     }
 
     public TracedRunnable(Runnable runnable, Span span) {
-        this(runnable, span, GlobalTracer.get().activeSpanManager());
+        this(runnable, span, GlobalTracer.get().activeSpanScheduler());
     }
 
     public TracedRunnable(Runnable runnable, SpanScheduler manager) {

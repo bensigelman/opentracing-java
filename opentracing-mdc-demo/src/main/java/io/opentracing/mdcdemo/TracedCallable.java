@@ -12,7 +12,7 @@ public class TracedCallable<T> implements Callable<T> {
     private Callable<T> callable;
 
     public TracedCallable(Callable<T> callable) {
-        this(callable, GlobalTracer.get().activeSpanManager());
+        this(callable, GlobalTracer.get().activeSpanScheduler());
     }
 
     public TracedCallable(Callable<T> callable, SpanScheduler manager) {

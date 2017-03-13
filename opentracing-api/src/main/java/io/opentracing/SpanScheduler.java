@@ -63,13 +63,16 @@ public interface SpanScheduler {
     SpanClosure captureActive();
 
     /**
-     * Explicitly capture the given Span and any active state (e.g., MDC state) about the current execution context.
+     * Explicitly capture the newly-started Span along with any active state (e.g., MDC state) from the current
+     * execution context.
      *
-     * @param span
+     * @param span the Span just started
      * @return a SpanClosure that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
+     *
+     * @see SpanClosure#onFinish(Span)
      */
-    SpanClosure capture(Span span);
+    SpanClosure onStart(Span span);
 
     /**
      * Tell the SpanScheduler that a particular Span has finished (and update any structures accordingly).

@@ -117,8 +117,8 @@ public final class GlobalTracer implements Tracer {
     }
 
     @Override
-    public SpanScheduler activeSpanManager() {
-        return lazyTracer().activeSpanManager();
+    public SpanScheduler activeSpanScheduler() {
+        return lazyTracer().activeSpanScheduler();
     }
 
     @Override
