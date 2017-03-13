@@ -121,8 +121,8 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
     }
 
     @Override
-    public SpanManager.SpanClosure startAndActivate() {
-        return null;  // XXX: not correct... we'd need access to the AbstractTracer's SpanManager.
+    public SpanScheduler.SpanClosure startAndActivate() {
+        return null;  // XXX: not correct... we'd need access to the AbstractTracer's SpanScheduler.
     }
 
     private void withBaggageFrom(SpanContext from) {

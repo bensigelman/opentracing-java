@@ -1,20 +1,20 @@
 package io.opentracing;
 
 /**
- * SpanManager allows an existing (possibly thread-local-aware) execution context provider to also manage the current
+ * SpanScheduler allows an existing (possibly thread-local-aware) execution context provider to also manage the current
  * active OpenTracing span.
  */
-public interface SpanManager {
+public interface SpanScheduler {
 
     /**
-     * A SpanClosure can be used *once* to make a Span active within a SpanManager, then deactivate it once the
+     * A SpanClosure can be used *once* to make a Span active within a SpanScheduler, then deactivate it once the
      * "closure" (or period of Span activity) has finished.
      *
      * Most users do not directly interact with SpanClosure, activate(), or deactivate(), but rather use
-     * SpanManager-aware Runnables/Callables/Executors. Those higher-level primitives need not be defined within the
+     * SpanScheduler-aware Runnables/Callables/Executors. Those higher-level primitives need not be defined within the
      * OpenTracing core API.
      *
-     * @see SpanManager#captureActive()
+     * @see SpanScheduler#captureActive()
      */
     interface SpanClosure extends AutoCloseable {
 
@@ -23,7 +23,7 @@ public interface SpanManager {
          *
          * NOTE: It is an error to call activate() more than once on a single SpanClosure instance.
          *
-         * @see SpanManager#captureActive()
+         * @see SpanScheduler#captureActive()
          * @return the newly-activated Span
          */
         Span activate();
@@ -43,21 +43,21 @@ public interface SpanManager {
     }
 
     /**
-     * @return the currently active Span for this SpanManager, or null if no such Span could be found
+     * @return the currently active Span for this SpanScheduler, or null if no such Span could be found
      */
     Span active();
 
      /**
-     * Capture any SpanManager-specific context (e.g., MDC context) along with the active Span (even if null) and
+     * Capture any SpanScheduler-specific context (e.g., MDC context) along with the active Span (even if null) and
      * encapsulate it in a SpanClosure for activation in the future, perhaps in a different thread or on a different
      * executor.
      *
      * If the active Span is null, the implementation must still return a valid SpanClosure; when the closure activates,
      * it will clear any active Span.
      *
-     * @see SpanManager.SpanClosure
+     * @see SpanScheduler.SpanClosure
      *
-     * @return a SpanClosure that represents the active Span and any other SpanManager-specific context, even if the
+     * @return a SpanClosure that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
      */
     SpanClosure captureActive();
@@ -66,13 +66,13 @@ public interface SpanManager {
      * Explicitly capture the given Span and any active state (e.g., MDC state) about the current execution context.
      *
      * @param span
-     * @return a SpanClosure that represents the active Span and any other SpanManager-specific context, even if the
+     * @return a SpanClosure that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
      */
     SpanClosure capture(Span span);
 
     /**
-     * Tell the SpanManager that a particular Span has finished (and update any structures accordingly).
+     * Tell the SpanScheduler that a particular Span has finished (and update any structures accordingly).
      */
     void onFinish(Span span);
 }

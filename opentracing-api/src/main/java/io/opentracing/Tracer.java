@@ -44,7 +44,7 @@ public interface Tracer {
    */
   SpanBuilder buildSpan(String operationName);
 
-  SpanManager activeSpanManager();
+  SpanScheduler activeSpanManager();
 
   /**
    * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -133,7 +133,7 @@ public interface Tracer {
       /** Returns the started Span. */
       Span start();
 
-      SpanManager.SpanClosure startAndActivate();
+      SpanScheduler.SpanClosure startAndActivate();
 
   }
 }

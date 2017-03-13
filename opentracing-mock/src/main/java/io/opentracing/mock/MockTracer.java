@@ -35,15 +35,15 @@ import io.opentracing.propagation.TextMap;
 public class MockTracer implements Tracer {
     private List<MockSpan> finishedSpans = new ArrayList<>();
     private final Propagator propagator;
-    private SpanManager spanManager;
+    private SpanScheduler spanScheduler;
 
     public MockTracer() {
         this(Propagator.PRINTER);
     }
 
-    public MockTracer(SpanManager manager) {
+    public MockTracer(SpanScheduler manager) {
         this(Propagator.PRINTER);
-        this.spanManager = manager;
+        this.spanScheduler = manager;
     }
 
     /**
@@ -150,8 +150,8 @@ public class MockTracer implements Tracer {
     @Override
     public SpanBuilder buildSpan(String operationName) {
         SpanBuilder sb = new SpanBuilder(operationName);
-        if (this.spanManager != null) {
-            Span active = this.spanManager.active();
+        if (this.spanScheduler != null) {
+            Span active = this.spanScheduler.active();
             if (active != null) {
                 sb.asChildOf(active.context());
             }
@@ -160,8 +160,8 @@ public class MockTracer implements Tracer {
     }
 
     @Override
-    public SpanManager activeSpanManager() {
-        return spanManager;
+    public SpanScheduler activeSpanManager() {
+        return spanScheduler;
     }
 
     @Override
@@ -237,16 +237,16 @@ public class MockTracer implements Tracer {
                 this.startMicros = MockSpan.nowMicros();
             }
             MockSpan rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
-            if (MockTracer.this.spanManager != null) {
-                MockTracer.this.spanManager.capture(rval).activate();
+            if (MockTracer.this.spanScheduler != null) {
+                MockTracer.this.spanScheduler.capture(rval).activate();
             }
             return rval;
         }
 
         @Override
-        public SpanManager.SpanClosure startAndActivate() {
+        public SpanScheduler.SpanClosure startAndActivate() {
             MockSpan span = this.start();
-            return MockTracer.this.spanManager.capture(span);
+            return MockTracer.this.spanScheduler.capture(span);
         }
 
         @Override

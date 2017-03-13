@@ -1,7 +1,7 @@
 package io.opentracing.mdcdemo;
 
 import io.opentracing.Span;
-import io.opentracing.SpanManager;
+import io.opentracing.SpanScheduler;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -44,7 +44,7 @@ public class MDCDemo {
         final List<Future<?>> subfutures = new ArrayList<>();
 
         // Create a parent SpanClosure for all of the async activity.
-        try (SpanManager.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate();) {
+        try (SpanScheduler.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate();) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -54,7 +54,7 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (SpanManager.SpanClosure childSpanClosure =
+                        try (SpanScheduler.SpanClosure childSpanClosure =
                                      tracer.buildSpan("child_" + j).startAndActivate();) {
                             Thread.currentThread().sleep(1000);
                             childSpanClosure.span().log("awoke");
@@ -100,7 +100,7 @@ public class MDCDemo {
         final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
         MDC.put("mdcKey", "mdcVal");
 
-        final MockTracer tracer = new MockTracer(new MDCSpanManager());
+        final MockTracer tracer = new MockTracer(new MDCSpanScheduler());
 
         // Do stuff with the MockTracer.
         {

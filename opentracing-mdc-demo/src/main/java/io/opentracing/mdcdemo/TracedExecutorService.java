@@ -1,6 +1,6 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.SpanManager;
+import io.opentracing.SpanScheduler;
 import io.opentracing.impl.GlobalTracer;
 
 import java.util.ArrayList;
@@ -10,15 +10,15 @@ import java.util.concurrent.*;
 
 public class TracedExecutorService implements ExecutorService {
     private ExecutorService executor;
-    private SpanManager manager;
+    private SpanScheduler manager;
 
     public TracedExecutorService(ExecutorService executor){
         this(executor, GlobalTracer.get().activeSpanManager());
     }
 
-    public TracedExecutorService(ExecutorService executor, SpanManager manager) {
+    public TracedExecutorService(ExecutorService executor, SpanScheduler manager) {
         if (executor == null) throw new NullPointerException("Executor is <null>.");
-        if (manager == null) throw new NullPointerException("SpanManager is <null>.");
+        if (manager == null) throw new NullPointerException("SpanScheduler is <null>.");
         this.executor = executor;
         this.manager = manager;
     }

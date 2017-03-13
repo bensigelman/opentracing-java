@@ -1,14 +1,14 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.SpanManager;
+import io.opentracing.SpanScheduler;
 import io.opentracing.Span;
 import io.opentracing.impl.GlobalTracer;
 
 
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
-    private SpanManager manager;
-    private SpanManager.SpanClosure spanClosure;
+    private SpanScheduler manager;
+    private SpanScheduler.SpanClosure spanClosure;
 
     public TracedRunnable(Runnable runnable) {
         this(runnable, GlobalTracer.get().activeSpanManager());
@@ -18,11 +18,11 @@ public class TracedRunnable implements Runnable {
         this(runnable, span, GlobalTracer.get().activeSpanManager());
     }
 
-    public TracedRunnable(Runnable runnable, SpanManager manager) {
+    public TracedRunnable(Runnable runnable, SpanScheduler manager) {
         this(runnable, manager.active(), manager);
     }
 
-    public TracedRunnable(Runnable runnable, Span span, SpanManager manager) {
+    public TracedRunnable(Runnable runnable, Span span, SpanScheduler manager) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
         this.manager = manager;
