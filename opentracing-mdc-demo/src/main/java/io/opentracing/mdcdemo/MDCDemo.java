@@ -37,14 +37,14 @@ public class MDCDemo {
 
         // Create an ExecutorService and wrap it in a TracedExecutorService.
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
-        final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.activeSpanScheduler());
+        final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.spanScheduler());
 
-        // Hacky lists of futures we wait for before exiting asyncSpans.
+        // Hacky lists of futures we wait for before exiting async Spans.
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
 
         // Create a parent SpanClosure for all of the async activity.
-        try (SpanScheduler.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate();) {
+        try (final SpanScheduler.SpanClosure parentSpanClosure = tracer.buildSpan("parent").startAndActivate(true);) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -54,14 +54,14 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (SpanScheduler.SpanClosure childSpanClosure =
-                                     tracer.buildSpan("child_" + j).startAndActivate();) {
+                        try (final SpanScheduler.SpanClosure childSpanClosure =
+                                     tracer.buildSpan("child_" + j).startAndActivate(false);) {
                             Thread.currentThread().sleep(1000);
                             childSpanClosure.span().log("awoke");
                             Runnable r = new Runnable() {
                                 @Override
                                 public void run() {
-                                    Span active = tracer.activeSpanScheduler().active();
+                                    Span active = tracer.spanScheduler().active();
                                     active.log("awoke again");
                                     // Create a grandchild for each child.
                                     Span grandchild = tracer.buildSpan("grandchild_" + j).start();

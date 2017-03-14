@@ -23,7 +23,7 @@ public interface Tracer {
   /**
    * Return a new SpanBuilder for a Span with the given `operationName`.
    *
-   * <p>If there is an active Span according to the activeSpanScheduler(),
+   * <p>If there is an active Span according to the spanScheduler(),
    * buildSpan will automatically have an asChildOf() reference to same.
    *
    * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
@@ -44,7 +44,7 @@ public interface Tracer {
    */
   SpanBuilder buildSpan(String operationName);
 
-  SpanScheduler activeSpanScheduler();
+  SpanScheduler spanScheduler();
 
   /**
    * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -133,7 +133,8 @@ public interface Tracer {
       /** Returns the started Span. */
       Span start();
 
-      SpanScheduler.SpanClosure startAndActivate();
+      // XXX comment
+      SpanScheduler.SpanClosure startAndActivate(boolean autoFinish);
 
   }
 }

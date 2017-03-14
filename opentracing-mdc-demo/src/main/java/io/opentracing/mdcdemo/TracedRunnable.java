@@ -11,11 +11,11 @@ public class TracedRunnable implements Runnable {
     private SpanScheduler.SpanClosure spanClosure;
 
     public TracedRunnable(Runnable runnable) {
-        this(runnable, GlobalTracer.get().activeSpanScheduler());
+        this(runnable, GlobalTracer.get().spanScheduler());
     }
 
     public TracedRunnable(Runnable runnable, Span span) {
-        this(runnable, span, GlobalTracer.get().activeSpanScheduler());
+        this(runnable, span, GlobalTracer.get().spanScheduler());
     }
 
     public TracedRunnable(Runnable runnable, SpanScheduler manager) {
@@ -26,7 +26,7 @@ public class TracedRunnable implements Runnable {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
         this.manager = manager;
-        this.spanClosure = manager.captureActive();
+        this.spanClosure = manager.captureActive(false);
     }
 
     @Override

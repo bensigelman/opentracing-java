@@ -16,11 +16,13 @@ public class MDCSpanScheduler implements SpanScheduler {
     class MDCSnapshot implements SpanClosure {
         private final Map<String, String> mdcContext;
         private final Span span;
+        private final boolean autoFinish;
         private MDCSnapshot toRestore = null;
 
-        MDCSnapshot(Span span) {
+        MDCSnapshot(Span span, boolean autoFinish) {
             this.mdcContext = MDC.getCopyOfContextMap();
             this.span = span;
+            this.autoFinish = autoFinish;
         }
 
         @Override
@@ -32,7 +34,7 @@ public class MDCSpanScheduler implements SpanScheduler {
 
         @Override
         public void close() {
-            this.deactivate(true);
+            this.deactivate(this.autoFinish);
         }
 
         @Override
@@ -57,13 +59,13 @@ public class MDCSpanScheduler implements SpanScheduler {
     }
 
     @Override
-    public MDCSnapshot captureActive() {
-        return new MDCSnapshot(active());
+    public MDCSnapshot captureActive(boolean autoFinish) {
+        return new MDCSnapshot(active(), autoFinish);
     }
 
     @Override
-    public SpanClosure onStart(Span span) {
-        return new MDCSnapshot(span);
+    public MDCSnapshot onStart(Span span, boolean autoFinish) {
+        return new MDCSnapshot(span, autoFinish);
     }
 
     @Override

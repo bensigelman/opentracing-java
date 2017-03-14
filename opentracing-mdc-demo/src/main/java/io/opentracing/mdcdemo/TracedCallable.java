@@ -12,7 +12,7 @@ public class TracedCallable<T> implements Callable<T> {
     private Callable<T> callable;
 
     public TracedCallable(Callable<T> callable) {
-        this(callable, GlobalTracer.get().activeSpanScheduler());
+        this(callable, GlobalTracer.get().spanScheduler());
     }
 
     public TracedCallable(Callable<T> callable, SpanScheduler manager) {
@@ -23,7 +23,7 @@ public class TracedCallable<T> implements Callable<T> {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
         this.manager = manager;
-        this.spanClosure = manager.captureActive();
+        this.spanClosure = manager.captureActive(false);
     }
 
     public T call() throws Exception {

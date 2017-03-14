@@ -63,7 +63,7 @@ final class NoopSpanBuilderImpl implements NoopSpanBuilder {
     }
 
     @Override
-    public SpanScheduler.SpanClosure startAndActivate() { return null; }  // XXX: not correct
+    public SpanScheduler.SpanClosure startAndActivate(boolean autoFinish) { return null; }  // XXX: not correct
 
     @Override
     public Iterable<Map.Entry<String, String>> baggageItems() {

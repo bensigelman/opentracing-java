@@ -13,7 +13,7 @@ public class TracedExecutorService implements ExecutorService {
     private SpanScheduler manager;
 
     public TracedExecutorService(ExecutorService executor){
-        this(executor, GlobalTracer.get().activeSpanScheduler());
+        this(executor, GlobalTracer.get().spanScheduler());
     }
 
     public TracedExecutorService(ExecutorService executor, SpanScheduler manager) {

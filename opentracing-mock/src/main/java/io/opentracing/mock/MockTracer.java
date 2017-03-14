@@ -160,7 +160,7 @@ public class MockTracer implements Tracer {
     }
 
     @Override
-    public SpanScheduler activeSpanScheduler() {
+    public SpanScheduler spanScheduler() {
         return spanScheduler;
     }
 
@@ -236,17 +236,15 @@ public class MockTracer implements Tracer {
             if (this.startMicros == 0) {
                 this.startMicros = MockSpan.nowMicros();
             }
-            MockSpan rval = new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
-            if (MockTracer.this.spanScheduler != null) {
-                MockTracer.this.spanScheduler.onStart(rval).activate();
-            }
-            return rval;
+            return new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
         }
 
         @Override
-        public SpanScheduler.SpanClosure startAndActivate() {
+        public SpanScheduler.SpanClosure startAndActivate(boolean autoFinish) {
             MockSpan span = this.start();
-            return MockTracer.this.spanScheduler.onStart(span);
+            SpanScheduler.SpanClosure rval = MockTracer.this.spanScheduler.onStart(span, autoFinish);
+            rval.activate();
+            return rval;
         }
 
         @Override

@@ -23,7 +23,7 @@ public interface SpanScheduler {
          *
          * NOTE: It is an error to call activate() more than once on a single SpanClosure instance.
          *
-         * @see SpanScheduler#captureActive()
+         * @see SpanScheduler#captureActive(boolean)
          * @return the newly-activated Span
          */
         Span activate();
@@ -34,7 +34,7 @@ public interface SpanScheduler {
         Span span();
 
         /**
-         * End this active period for the Span previously returned by activate(). Finish the span iff finish=true.
+         * End this active period for the Span previously returned by activate().
          *
          * NOTE: It is an error to call deactivate() more than once on a single SpanClosure instance.
          */
@@ -47,7 +47,7 @@ public interface SpanScheduler {
      */
     Span active();
 
-     /**
+    /**
      * Capture any SpanScheduler-specific context (e.g., MDC context) along with the active Span (even if null) and
      * encapsulate it in a SpanClosure for activation in the future, perhaps in a different thread or on a different
      * executor.
@@ -55,24 +55,27 @@ public interface SpanScheduler {
      * If the active Span is null, the implementation must still return a valid SpanClosure; when the closure activates,
      * it will clear any active Span.
      *
-     * @see SpanScheduler.SpanClosure
+     * @param autoFinish true if.f. the span should be finish()ed when the SpanClosure is deactivated
      *
      * @return a SpanClosure that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
+     *
+     * @see SpanScheduler.SpanClosure
      */
-    SpanClosure captureActive();
+    SpanClosure captureActive(boolean autoFinish);
 
     /**
      * Explicitly capture the newly-started Span along with any active state (e.g., MDC state) from the current
      * execution context.
      *
      * @param span the Span just started
+     * @param autoFinish true if.f. the span should be finish()ed when the SpanClosure is deactivated
      * @return a SpanClosure that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
      *
      * @see SpanClosure#onFinish(Span)
      */
-    SpanClosure onStart(Span span);
+    SpanClosure onStart(Span span, boolean autoFinish);
 
     /**
      * Tell the SpanScheduler that a particular Span has finished (and update any structures accordingly).
