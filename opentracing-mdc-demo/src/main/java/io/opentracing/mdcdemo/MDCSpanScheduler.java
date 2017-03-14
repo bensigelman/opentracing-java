@@ -34,7 +34,7 @@ public class MDCSpanScheduler implements SpanScheduler {
 
         @Override
         public void close() {
-            this.deactivate(this.autoFinish);
+            this.doDeactivate(this.autoFinish);
         }
 
         @Override
@@ -43,7 +43,11 @@ public class MDCSpanScheduler implements SpanScheduler {
         }
 
         @Override
-        public void deactivate(boolean finishSpan) {
+        public void deactivate() {
+            doDeactivate(false);
+        }
+
+        private void doDeactivate(boolean finishSpan) {
             if (span != null && finishSpan) {
                 span.finish();
             }

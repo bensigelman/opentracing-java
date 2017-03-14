@@ -31,7 +31,7 @@ public class TracedCallable<T> implements Callable<T> {
         try {
             return callable.call();
         } finally {
-            spanClosure.deactivate(false);
+            spanClosure.deactivate();
         }
     }
 }

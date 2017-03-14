@@ -35,7 +35,7 @@ public class TracedRunnable implements Runnable {
         try {
             runnable.run();
         } finally {
-            this.spanClosure.deactivate(false);
+            this.spanClosure.deactivate();
         }
     }
 }

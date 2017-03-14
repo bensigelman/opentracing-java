@@ -38,7 +38,7 @@ public interface SpanScheduler {
          *
          * NOTE: It is an error to call deactivate() more than once on a single SpanClosure instance.
          */
-        void deactivate(boolean finishSpan);
+        void deactivate();
 
     }
 
