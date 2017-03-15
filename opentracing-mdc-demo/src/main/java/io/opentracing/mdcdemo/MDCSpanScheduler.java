@@ -38,11 +38,6 @@ public class MDCSpanScheduler implements SpanScheduler {
         }
 
         @Override
-        public Span span() {
-            return span;
-        }
-
-        @Override
         public void deactivate() {
             doDeactivate(false);
         }
@@ -79,22 +74,5 @@ public class MDCSpanScheduler implements SpanScheduler {
             return null;
         }
         return snapshot.span;
-    }
-
-    @Override
-    public void onFinish(Span span) {
-        MDCSnapshot snapshot = tlsSnapshot.get();
-        MDCSnapshot prevSnapshot = null;
-        while (snapshot != null) {
-            if (snapshot.span == span) {
-               if (prevSnapshot == null) {
-                   tlsSnapshot.set(snapshot.toRestore);
-               } else {
-                   prevSnapshot.toRestore = snapshot.toRestore;
-               }
-            }
-            prevSnapshot = snapshot;
-            snapshot = snapshot.toRestore;
-        }
     }
 }

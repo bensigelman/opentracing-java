@@ -57,7 +57,7 @@ public class MDCDemo {
                         try (final SpanScheduler.SpanClosure childSpanClosure =
                                      tracer.buildSpan("child_" + j).startAndActivate(false);) {
                             Thread.currentThread().sleep(1000);
-                            childSpanClosure.span().log("awoke");
+                            tracer.spanScheduler().active().log("awoke");
                             Runnable r = new Runnable() {
                                 @Override
                                 public void run() {

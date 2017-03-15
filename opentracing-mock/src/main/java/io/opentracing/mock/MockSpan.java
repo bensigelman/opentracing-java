@@ -110,9 +110,6 @@ public final class MockSpan implements Span {
         this.finishMicros = finishMicros;
         this.mockTracer.appendFinishedSpan(this);
         this.finished = true;
-        if (this.mockTracer.spanScheduler() != null) {
-            this.mockTracer.spanScheduler().onFinish(this);
-        }
     }
 
     @Override

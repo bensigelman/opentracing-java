@@ -29,11 +29,6 @@ public interface SpanScheduler {
         Span activate();
 
         /**
-         * @return the encapsulated Span, or null if there isn't one.
-         */
-        Span span();
-
-        /**
          * End this active period for the Span previously returned by activate().
          *
          * NOTE: It is an error to call deactivate() more than once on a single SpanClosure instance.
@@ -72,13 +67,6 @@ public interface SpanScheduler {
      * @param autoFinish true if.f. the span should be finish()ed when the SpanClosure is deactivated
      * @return a SpanClosure that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
-     *
-     * @see SpanClosure#onFinish(Span)
      */
     SpanClosure onStart(Span span, boolean autoFinish);
-
-    /**
-     * Tell the SpanScheduler that a particular Span has finished (and update any structures accordingly).
-     */
-    void onFinish(Span span);
 }
