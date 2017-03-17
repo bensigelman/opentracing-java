@@ -233,13 +233,16 @@ public class MockTracer implements Tracer {
             if (this.startMicros == 0) {
                 this.startMicros = MockSpan.nowMicros();
             }
-            return new MockSpan(MockTracer.this, this.operationName, this.startMicros, initialTags, this.firstParent);
+            if (firstParent == null) {
+                firstParent = (MockSpan.MockContext)spanScheduler.activeContext();
+            }
+            return new MockSpan(MockTracer.this, operationName, startMicros, initialTags, firstParent);
         }
 
         @Override
         public SpanScheduler.ActivationState startAndActivate(boolean autoFinish) {
             MockSpan span = this.start();
-            SpanScheduler.ActivationState rval = MockTracer.this.spanScheduler.capture(span);
+            SpanScheduler.ActivationState rval = spanScheduler.capture(span);
             rval.activate(autoFinish);
             return rval;
         }
