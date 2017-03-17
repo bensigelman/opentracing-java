@@ -20,31 +20,38 @@ import io.opentracing.propagation.Format;
  */
 public interface Tracer {
 
-  /**
-   * Return a new SpanBuilder for a Span with the given `operationName`.
-   *
-   * <p>If there is an active Span according to the spanScheduler(),
-   * buildSpan will automatically have an asChildOf() reference to same.
-   *
-   * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
-   *
-   * <p>A contrived example:
-   * <pre>{@code
-    Tracer tracer = ...
+    /**
+     * Return a new SpanBuilder for a Span with the given `operationName`.
+     *
+     * <p>If there is an active Span according to the {@link Tracer#spanScheduler()}'s
+     * {@link SpanScheduler#activeContext}, buildSpan will automatically build a {@link References#INFERRED_CHILD_OF}
+     * reference to same.
+     *
+     * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
+     *
+     * <p>A contrived example:
+     * <pre>{@code
+         Tracer tracer = ...
 
-    Span parentSpan = tracer.buildSpan("DoWork")
-                            .start();
+         // Note: if there is an {@link SpanScheduler#active()} Span, it will be treated as the parent of workSpan.
+         Span workSpan = tracer.buildSpan("DoWork")
+                               .start();
 
-    Span http = tracer.buildSpan("HandleHTTPRequest")
-                      .asChildOf(parentSpan.context())
-                      .withTag("user_agent", req.UserAgent)
-                      .withTag("lucky_number", 42)
-                      .start();
-    }</pre>
-   */
-  SpanBuilder buildSpan(String operationName);
+         Span http = tracer.buildSpan("HandleHTTPRequest")
+                           .asChildOf(workSpan.context())
+                           .withTag("user_agent", req.UserAgent)
+                           .withTag("lucky_number", 42)
+                           .start();
+     }</pre>
+     */
+    SpanBuilder buildSpan(String operationName);
 
-  SpanScheduler spanScheduler();
+    /**
+     * @return the SpanScheduler associated with this Tracer. Must not be null.
+     * @see SpanScheduler
+     * @see ThreadLocalScheduler a simple built-in thread-local-storage SpanScheduler
+     */
+    SpanScheduler spanScheduler();
 
   /**
    * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -94,47 +101,47 @@ public interface Tracer {
   <C> SpanContext extract(Format<C> format, C carrier);
 
 
-  interface SpanBuilder extends SpanContext {
+    interface SpanBuilder extends SpanContext {
 
-      /**
-       * A shorthand for addReference(References.CHILD_OF, parent).
-       */
-      SpanBuilder asChildOf(SpanContext parent);
+        /**
+         * A shorthand for addReference(References.CHILD_OF, parent).
+         */
+        SpanBuilder asChildOf(SpanContext parent);
 
-      /**
-       * A shorthand for addReference(References.CHILD_OF, parent.context()).
-       */
-      SpanBuilder asChildOf(Span parent);
+        /**
+         * A shorthand for addReference(References.CHILD_OF, parent.context()).
+         */
+        SpanBuilder asChildOf(Span parent);
 
-      /**
-       * Add a reference from the Span being built to a distinct (usually parent) Span. May be called multiple times to
-       * represent multiple such References.
-       *
-       * @param referenceType the reference type, typically one of the constants defined in References
-       * @param referencedContext the SpanContext being referenced; e.g., for a References.CHILD_OF referenceType, the
-       *                          referencedContext is the parent
-       *
-       * @see io.opentracing.References
-       */
-      SpanBuilder addReference(String referenceType, SpanContext referencedContext);
+        /**
+         * Add a reference from the Span being built to a distinct (usually parent) Span. May be called multiple times to
+         * represent multiple such References.
+         *
+         * @param referenceType the reference type, typically one of the constants defined in References
+         * @param referencedContext the SpanContext being referenced; e.g., for a References.CHILD_OF referenceType, the
+         *                          referencedContext is the parent
+         *
+         * @see io.opentracing.References
+         */
+        SpanBuilder addReference(String referenceType, SpanContext referencedContext);
 
-      /** Same as {@link Span#setTag(String, String)}, but for the span being built. */
-      SpanBuilder withTag(String key, String value);
+        /** Same as {@link Span#setTag(String, String)}, but for the span being built. */
+        SpanBuilder withTag(String key, String value);
 
-      /** Same as {@link Span#setTag(String, boolean)}, but for the span being built. */
-      SpanBuilder withTag(String key, boolean value);
+        /** Same as {@link Span#setTag(String, boolean)}, but for the span being built. */
+        SpanBuilder withTag(String key, boolean value);
 
-      /** Same as {@link Span#setTag(String, Number)}, but for the span being built. */
-      SpanBuilder withTag(String key, Number value);
+        /** Same as {@link Span#setTag(String, Number)}, but for the span being built. */
+        SpanBuilder withTag(String key, Number value);
 
-      /** Specify a timestamp of when the Span was started, represented in microseconds since epoch. */
-      SpanBuilder withStartTimestamp(long microseconds);
+        /** Specify a timestamp of when the Span was started, represented in microseconds since epoch. */
+        SpanBuilder withStartTimestamp(long microseconds);
 
-      /** Returns the started Span. */
-      Span start();
+        /** Returns the started Span. */
+        Span start();
 
-      // XXX comment
-      SpanScheduler.ActivationState startAndActivate(boolean autoFinish);
+        // XXX comment
+        SpanScheduler.ActivationState startAndActivate(boolean autoFinish);
 
-  }
+    }
 }

@@ -40,7 +40,7 @@ public class MDCSpanScheduler implements SpanScheduler {
 
         @Override
         public void deactivate() {
-            doDeactivate(false);
+            doDeactivate(this.autoFinish);
         }
 
         private void doDeactivate(boolean finishSpan) {

@@ -41,9 +41,9 @@ public class MockTracer implements Tracer {
         this(Propagator.PRINTER);
     }
 
-    public MockTracer(SpanScheduler manager) {
+    public MockTracer(SpanScheduler scheduler) {
         this(Propagator.PRINTER);
-        this.spanScheduler = manager;
+        this.spanScheduler = scheduler;
     }
 
     /**

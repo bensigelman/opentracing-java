@@ -29,15 +29,15 @@ abstract class AbstractTracer implements Tracer {
     static final boolean BAGGAGE_ENABLED = !Boolean.getBoolean("opentracing.propagation.dropBaggage");
 
     private final PropagationRegistry registry = new PropagationRegistry();
-    private SpanScheduler manager;
+    private SpanScheduler scheduler;
 
 
     protected AbstractTracer() {
         this(null);  // SpanScheduler is optional for this spike
     }
 
-    protected AbstractTracer(SpanScheduler manager) {
-        this.manager = manager;
+    protected AbstractTracer(SpanScheduler scheduler) {
+        this.scheduler = scheduler;
         registry.register(Format.Builtin.TEXT_MAP, new TextMapInjectorImpl(this));
         registry.register(Format.Builtin.TEXT_MAP, new TextMapExtractorImpl(this));
     }
@@ -46,7 +46,7 @@ abstract class AbstractTracer implements Tracer {
 
     @Override
     public SpanScheduler spanScheduler() {
-        return this.manager;
+        return this.scheduler;
     }
 
     @Override

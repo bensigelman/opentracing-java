@@ -10,37 +10,37 @@ import java.util.concurrent.*;
 
 public class TracedExecutorService implements ExecutorService {
     private ExecutorService executor;
-    private SpanScheduler manager;
+    private SpanScheduler scheduler;
 
     public TracedExecutorService(ExecutorService executor){
         this(executor, GlobalTracer.get().spanScheduler());
     }
 
-    public TracedExecutorService(ExecutorService executor, SpanScheduler manager) {
+    public TracedExecutorService(ExecutorService executor, SpanScheduler scheduler) {
         if (executor == null) throw new NullPointerException("Executor is <null>.");
-        if (manager == null) throw new NullPointerException("SpanScheduler is <null>.");
+        if (scheduler == null) throw new NullPointerException("SpanScheduler is <null>.");
         this.executor = executor;
-        this.manager = manager;
+        this.scheduler = scheduler;
     }
 
     @Override
     public void execute(Runnable command) {
-        executor.execute(new TracedRunnable(command, manager));
+        executor.execute(new TracedRunnable(command, scheduler));
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return executor.submit(new TracedRunnable(task, manager));
+        return executor.submit(new TracedRunnable(task, scheduler));
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return executor.submit(new TracedRunnable(task, manager), result);
+        return executor.submit(new TracedRunnable(task, scheduler), result);
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return executor.submit(new TracedCallable(task, manager));
+        return executor.submit(new TracedCallable(task, scheduler));
     }
 
     @Override
@@ -94,7 +94,7 @@ public class TracedExecutorService implements ExecutorService {
         Collection<? extends Callable<T>> tasks) {
         if (tasks == null) throw new NullPointerException("Collection of tasks is <null>.");
         Collection<Callable<T>> result = new ArrayList<Callable<T>>(tasks.size());
-        for (Callable<T> task : tasks) result.add(new TracedCallable(task, manager));
+        for (Callable<T> task : tasks) result.add(new TracedCallable(task, scheduler));
         return result;
     }
 }

@@ -7,7 +7,7 @@ import io.opentracing.impl.GlobalTracer;
 
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
-    private SpanScheduler manager;
+    private SpanScheduler manschedulerer;
     private SpanScheduler.ActivationState activationState;
 
     public TracedRunnable(Runnable runnable) {
@@ -18,15 +18,15 @@ public class TracedRunnable implements Runnable {
         this(runnable, span, GlobalTracer.get().spanScheduler());
     }
 
-    public TracedRunnable(Runnable runnable, SpanScheduler manager) {
-        this(runnable, manager.active(), manager);
+    public TracedRunnable(Runnable runnable, SpanScheduler manschedulerer) {
+        this(runnable, manschedulerer.active(), manschedulerer);
     }
 
-    public TracedRunnable(Runnable runnable, Span span, SpanScheduler manager) {
+    public TracedRunnable(Runnable runnable, Span span, SpanScheduler manschedulerer) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
-        this.manager = manager;
-        this.activationState = manager.captureActive();
+        this.manschedulerer = manschedulerer;
+        this.activationState = manschedulerer.captureActive();
     }
 
     @Override
