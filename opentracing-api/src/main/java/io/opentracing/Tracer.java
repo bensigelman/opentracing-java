@@ -134,7 +134,7 @@ public interface Tracer {
       Span start();
 
       // XXX comment
-      SpanScheduler.SpanClosure startAndActivate(boolean autoFinish);
+      SpanScheduler.ActivationState startAndActivate(boolean autoFinish);
 
   }
 }

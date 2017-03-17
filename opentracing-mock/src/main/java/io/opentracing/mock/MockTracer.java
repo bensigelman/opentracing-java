@@ -151,10 +151,7 @@ public class MockTracer implements Tracer {
     public SpanBuilder buildSpan(String operationName) {
         SpanBuilder sb = new SpanBuilder(operationName);
         if (this.spanScheduler != null) {
-            Span active = this.spanScheduler.active();
-            if (active != null) {
-                sb.asChildOf(active.context());
-            }
+            sb.asChildOf(this.spanScheduler.activeContext());
         }
         return sb;
     }
@@ -240,10 +237,10 @@ public class MockTracer implements Tracer {
         }
 
         @Override
-        public SpanScheduler.SpanClosure startAndActivate(boolean autoFinish) {
+        public SpanScheduler.ActivationState startAndActivate(boolean autoFinish) {
             MockSpan span = this.start();
-            SpanScheduler.SpanClosure rval = MockTracer.this.spanScheduler.onStart(span, autoFinish);
-            rval.activate();
+            SpanScheduler.ActivationState rval = MockTracer.this.spanScheduler.capture(span);
+            rval.activate(autoFinish);
             return rval;
         }
 

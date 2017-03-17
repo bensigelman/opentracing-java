@@ -1,6 +1,7 @@
 package io.opentracing.mdcdemo;
 
 import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.SpanScheduler;
 import org.slf4j.MDC;
 
@@ -13,20 +14,20 @@ import java.util.Map;
 public class MDCSpanScheduler implements SpanScheduler {
     private final ThreadLocal<MDCSnapshot> tlsSnapshot = new ThreadLocal<MDCSnapshot>();
 
-    class MDCSnapshot implements SpanClosure {
+    class MDCSnapshot implements ActivationState {
         private final Map<String, String> mdcContext;
         private final Span span;
-        private final boolean autoFinish;
+        private boolean autoFinish;
         private MDCSnapshot toRestore = null;
 
-        MDCSnapshot(Span span, boolean autoFinish) {
+        MDCSnapshot(Span span) {
             this.mdcContext = MDC.getCopyOfContextMap();
             this.span = span;
-            this.autoFinish = autoFinish;
         }
 
         @Override
-        public Span activate() {
+        public Span activate(boolean autoFinish) {
+            this.autoFinish = autoFinish;
             toRestore = tlsSnapshot.get();
             tlsSnapshot.set(this);
             return span;
@@ -58,13 +59,13 @@ public class MDCSpanScheduler implements SpanScheduler {
     }
 
     @Override
-    public MDCSnapshot captureActive(boolean autoFinish) {
-        return new MDCSnapshot(active(), autoFinish);
+    public MDCSnapshot captureActive() {
+        return new MDCSnapshot(active());
     }
 
     @Override
-    public MDCSnapshot onStart(Span span, boolean autoFinish) {
-        return new MDCSnapshot(span, autoFinish);
+    public MDCSnapshot capture(Span span) {
+        return new MDCSnapshot(span);
     }
 
     @Override
@@ -74,5 +75,12 @@ public class MDCSpanScheduler implements SpanScheduler {
             return null;
         }
         return snapshot.span;
+    }
+
+    @Override
+    public SpanContext activeContext() {
+        Span active = this.active();
+        if (active == null) return null;
+        return active.context();
     }
 }
