@@ -240,9 +240,9 @@ public class MockTracer implements Tracer {
         }
 
         @Override
-        public SpanScheduler.ActivationState startAndActivate(boolean autoFinish) {
+        public SpanScheduler.Continuation startAndActivate(boolean autoFinish) {
             MockSpan span = this.start();
-            SpanScheduler.ActivationState rval = spanScheduler.capture(span);
+            SpanScheduler.Continuation rval = spanScheduler.capture(span);
             rval.activate(autoFinish);
             return rval;
         }

@@ -43,8 +43,8 @@ public class MDCDemo {
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
 
-        // Create a parent ActivationState for all of the async activity.
-        try (final SpanScheduler.ActivationState parentActivationState = tracer.buildSpan("parent").startAndActivate(true);) {
+        // Create a parent Continuation for all of the async activity.
+        try (final SpanScheduler.Continuation parentContinuation = tracer.buildSpan("parent").startAndActivate(true);) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -54,7 +54,7 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (final SpanScheduler.ActivationState childActivationState =
+                        try (final SpanScheduler.Continuation childContinuation =
                                      tracer.buildSpan("child_" + j).startAndActivate(false);) {
                             Thread.currentThread().sleep(1000);
                             tracer.spanScheduler().active().log("awoke");

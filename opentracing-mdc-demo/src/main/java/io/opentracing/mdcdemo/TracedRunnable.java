@@ -8,7 +8,7 @@ import io.opentracing.impl.GlobalTracer;
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
     private SpanScheduler manschedulerer;
-    private SpanScheduler.ActivationState activationState;
+    private SpanScheduler.Continuation continuation;
 
     public TracedRunnable(Runnable runnable) {
         this(runnable, GlobalTracer.get().spanScheduler());
@@ -26,16 +26,16 @@ public class TracedRunnable implements Runnable {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
         this.manschedulerer = manschedulerer;
-        this.activationState = manschedulerer.captureActive();
+        this.continuation = manschedulerer.captureActive();
     }
 
     @Override
     public void run() {
-        final Span span = this.activationState.activate(true); // XXX guessing on param value
+        final Span span = this.continuation.activate(true); // XXX guessing on param value
         try {
             runnable.run();
         } finally {
-            this.activationState.deactivate();
+            this.continuation.deactivate();
         }
     }
 }

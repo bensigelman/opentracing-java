@@ -7,31 +7,31 @@ package io.opentracing;
  * In any execution context (or any thread, etc), there is at most one "active" Span primarily responsible for the
  * work accomplished by the surrounding application code. That active Span may be accessed via the
  * {@link SpanScheduler#active()} method. If the application needs to defer work that should be part of the same
- * Span, the SpanScheduler provides a {@link SpanScheduler#captureActive()} method that returns an
- * {@link ActivationState}; this activation context may be used to re-activate and deactivate the
+ * Span, the SpanScheduler provides a {@link SpanScheduler#captureActive()} method that returns a
+ * {@link Continuation}; this activation context may be used to re-activate and deactivate the
  * captured Span in that other asynchronous executor and/or thread.
  */
 public interface SpanScheduler {
 
     /**
-     * An ActivationState can be used *once* to activate a Span and other execution context, then deactivate once the
+     * A Continuation can be used *once* to activate a Span and other execution context, then deactivate once the
      * active period has concluded. (In practice, this active period typically extends for the length of a deferred
      * async closure invocation.)
      * <p>
-     * Most users do not directly interact with ActivationState, activate(), or deactivate(), but rather use
+     * Most users do not directly interact with Continuation, activate(), or deactivate(), but rather use
      * SpanScheduler-aware Runnables/Callables/Executors. Those higher-level primitives need not be defined within the
      * OpenTracing core API.
      *
      * @see SpanScheduler#capture(Span)
      */
-    interface ActivationState extends AutoCloseable {
+    interface Continuation extends AutoCloseable {
 
         /**
-         * Make the Span (and other execution context) encapsulated by this ActivationState active and return it.
+         * Make the Span (and other execution context) encapsulated by this Continuation active and return it.
          * <p>
-         * NOTE: It is an error to call activate() more than once on a single ActivationState instance.
+         * NOTE: It is an error to call activate() more than once on a single Continuation instance.
          *
-         * @param finishOnDeactivate true if.f. the span should be finish()ed when the ActivationState is deactivated
+         * @param finishOnDeactivate true if.f. the span should be finish()ed when the Continuation is deactivated
          *
          * @see SpanScheduler#capture(Span)
          * @return the newly-activated Span
@@ -41,7 +41,7 @@ public interface SpanScheduler {
         /**
          * Mark the end of this active period for the Span previously returned by activate().
          * <p>
-         * NOTE: It is an error to call deactivate() more than once on a single ActivationState instance.
+         * NOTE: It is an error to call deactivate() more than once on a single Continuation instance.
          *
          * @see AutoCloseable#close()
          */
@@ -59,10 +59,10 @@ public interface SpanScheduler {
      * execution context.
      *
      * @param span the Span just started
-     * @return a ActivationState that represents the active Span and any other SpanScheduler-specific context, even if the
+     * @return a Continuation that represents the active Span and any other SpanScheduler-specific context, even if the
      *     active Span is null.
      */
-    ActivationState capture(Span span);
+    Continuation capture(Span span);
 
     // (Convenience methods follow)
 
@@ -81,7 +81,7 @@ public interface SpanScheduler {
      *     this.capture(this.active())
      * }</pre>@code{}
      *
-     * @return an ActivationState wrapped around this.active()
+     * @return a Continuation wrapped around this.active()
      */
-    ActivationState captureActive();
+    Continuation captureActive();
 }

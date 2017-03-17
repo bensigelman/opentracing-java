@@ -121,7 +121,7 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
     }
 
     @Override
-    public SpanScheduler.ActivationState startAndActivate(boolean autoFinish) {
+    public SpanScheduler.Continuation startAndActivate(boolean autoFinish) {
         return null;  // XXX: not correct... we'd need access to the AbstractTracer's SpanScheduler.
     }
 

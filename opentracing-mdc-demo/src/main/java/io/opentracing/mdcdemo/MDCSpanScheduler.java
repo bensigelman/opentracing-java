@@ -14,7 +14,7 @@ import java.util.Map;
 public class MDCSpanScheduler implements SpanScheduler {
     private final ThreadLocal<MDCSnapshot> tlsSnapshot = new ThreadLocal<MDCSnapshot>();
 
-    class MDCSnapshot implements ActivationState {
+    class MDCSnapshot implements Continuation {
         private final Map<String, String> mdcContext;
         private final Span span;
         private boolean autoFinish;

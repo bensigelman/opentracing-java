@@ -7,17 +7,17 @@ package io.opentracing;
  * @see Tracer#spanScheduler()
  */
 public class ThreadLocalScheduler implements SpanScheduler {
-    ThreadLocal<ActivationState> threadLocalActive;
+    ThreadLocal<Continuation> threadLocalActive = new ThreadLocal<>();
 
     @Override
     public Span active() {
-        ActivationState state = threadLocalActive.get();
+        Continuation state = threadLocalActive.get();
         return (state == null) ? null : state.span;
     }
 
     @Override
-    public ActivationState capture(Span span) {
-        return new ThreadLocalScheduler.ActivationState(span);
+    public Continuation capture(Span span) {
+        return new Continuation(span);
     }
 
     @Override
@@ -28,14 +28,14 @@ public class ThreadLocalScheduler implements SpanScheduler {
     }
 
     @Override
-    public ActivationState captureActive() {
+    public Continuation captureActive() {
         return capture(active());
     }
 
-    class ActivationState implements SpanScheduler.ActivationState {
+    class Continuation implements SpanScheduler.Continuation {
         private final Span span;
         private boolean autoFinish;
-        private ActivationState toRestore = null;
+        private Continuation toRestore = null;
 
         @Override
         public Span activate(boolean finishOnDeactivate) {
@@ -62,7 +62,7 @@ public class ThreadLocalScheduler implements SpanScheduler {
             threadLocalActive.set(toRestore);
         }
 
-        private ActivationState(Span span) {
+        private Continuation(Span span) {
             this.span = span;
         }
     }

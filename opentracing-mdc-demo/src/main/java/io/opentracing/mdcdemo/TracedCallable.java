@@ -7,7 +7,7 @@ import io.opentracing.impl.GlobalTracer;
 import java.util.concurrent.Callable;
 
 public class TracedCallable<T> implements Callable<T> {
-    private SpanScheduler.ActivationState activationState;
+    private SpanScheduler.Continuation continuation;
     private SpanScheduler scheduler;
     private Callable<T> callable;
 
@@ -23,15 +23,15 @@ public class TracedCallable<T> implements Callable<T> {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
         this.scheduler = scheduler;
-        this.activationState = scheduler.captureActive();
+        this.continuation = scheduler.captureActive();
     }
 
     public T call() throws Exception {
-        final Span span = activationState.activate(true);
+        final Span span = continuation.activate(true);
         try {
             return callable.call();
         } finally {
-            activationState.deactivate();
+            continuation.deactivate();
         }
     }
 }

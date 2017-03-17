@@ -146,14 +146,16 @@ public interface Tracer {
         Span start();
 
         /**
-         * Returns a newly started and {@linkshort SpanScheduler.ActivationState#activate(boolean) activated}
-         * {@link SpanScheduler.ActivationState}.
+         * Returns a newly started and {@linkshort SpanScheduler.Continuation#activate(boolean) activated}
+         * {@link SpanScheduler.Continuation}.
          *
-         * @param autoFinish if true, the {@link Span} encapsulated by the {@link SpanScheduler.ActivationState} will
-         *                   finish() upon invocation of {@link SpanScheduler.ActivationState#deactivate()}.
-         * @return a pre-activated {@link SpanScheduler.ActivationState}
+         * @param autoFinish if true, the {@link Span} encapsulated by the {@link SpanScheduler.Continuation} will
+         *                   finish() upon invocation of {@link SpanScheduler.Continuation#deactivate()}.
+         * @return a pre-activated {@link SpanScheduler.Continuation}
+         *
+         * @see SpanScheduler.Continuation#activate(boolean)
          */
-        SpanScheduler.ActivationState startAndActivate(boolean autoFinish);
+        SpanScheduler.Continuation startAndActivate(boolean autoFinish);
 
     }
 }
