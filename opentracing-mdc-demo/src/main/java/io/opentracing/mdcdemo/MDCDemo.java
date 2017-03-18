@@ -37,7 +37,7 @@ public class MDCDemo {
 
         // Create an ExecutorService and wrap it in a TracedExecutorService.
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
-        final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.spanScheduler());
+        final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.scheduler());
 
         // Hacky lists of futures we wait for before exiting async Spans.
         final List<Future<?>> futures = new ArrayList<>();
@@ -57,11 +57,11 @@ public class MDCDemo {
                         try (final SpanScheduler.Continuation childContinuation =
                                      tracer.buildSpan("child_" + j).startAndActivate(false);) {
                             Thread.currentThread().sleep(1000);
-                            tracer.spanScheduler().active().log("awoke");
+                            tracer.scheduler().active().log("awoke");
                             Runnable r = new Runnable() {
                                 @Override
                                 public void run() {
-                                    Span active = tracer.spanScheduler().active();
+                                    Span active = tracer.scheduler().active();
                                     active.log("awoke again");
                                     // Create a grandchild for each child.
                                     Span grandchild = tracer.buildSpan("grandchild_" + j).start();
