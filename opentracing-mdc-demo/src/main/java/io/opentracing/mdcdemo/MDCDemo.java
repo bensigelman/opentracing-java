@@ -32,7 +32,7 @@ public class MDCDemo {
         parent.finish();
     }
 
-    public void asyncSpans() {
+    public void asyncSpans() throws Exception {
         final Tracer tracer = this.tracer; // save typing
 
         // Create an ExecutorService and wrap it in a TracedExecutorService.
@@ -76,26 +76,19 @@ public class MDCDemo {
                     }
                 }));
             }
-        } catch (Exception e) { }
-
-        try {
             for (Future<?> f : futures) {
                 f.get();
             }
             for (Future<?> f : subfutures) {
                 f.get();
             }
-        } catch (Exception e) { }
+        }
 
         otExecutor.shutdown();
-        try {
-            otExecutor.awaitTermination(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        otExecutor.awaitTermination(3, TimeUnit.SECONDS);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         org.apache.log4j.BasicConfigurator.configure();
         final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
         MDC.put("mdcKey", "mdcVal");

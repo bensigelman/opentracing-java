@@ -6,24 +6,24 @@ import io.opentracing.Span;
 
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
-    private SpanScheduler manschedulerer;
+    private SpanScheduler schedulerer;
     private SpanScheduler.Continuation continuation;
 
-    public TracedRunnable(Runnable runnable, SpanScheduler manschedulerer) {
-        this(runnable, manschedulerer.active(), manschedulerer);
+    public TracedRunnable(Runnable runnable, SpanScheduler schedulerer) {
+        this(runnable, schedulerer.active(), schedulerer);
     }
 
-    public TracedRunnable(Runnable runnable, Span span, SpanScheduler manschedulerer) {
+    public TracedRunnable(Runnable runnable, Span span, SpanScheduler schedulerer) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
-        this.manschedulerer = manschedulerer;
-        this.continuation = manschedulerer.captureActive();
+        this.schedulerer = schedulerer;
+        this.continuation = schedulerer.captureActive();
     }
 
     @Override
     public void run() {
-        // XXX: There's no good way to know what the activate() param should be here.
-        final Span span = this.continuation.activate(true);
+        // NOTE: There's no way to be sure about the finishOnDeactivate parameter to activate(), so we play it safe.
+        final Span span = this.continuation.activate(false);
         try {
             runnable.run();
         } finally {
