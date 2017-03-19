@@ -24,12 +24,12 @@ public class MDCDemo {
         span.finish();
     }
 
-    public void trivialChild() {
-        Span parent = this.tracer.buildSpan("trivialParent").start();
-        // The child will automatically know about the parent.
-        Span child = this.tracer.buildSpan("trivialChild").start();
-        child.finish();
-        parent.finish();
+    public void trivialChild() throws Exception {
+        try (Scheduler.Continuation c = this.tracer.buildSpan("trivialParent").startAndActivate(true)) {
+            // The child will automatically know about the parent.
+            Span child = this.tracer.buildSpan("trivialChild").start();
+            child.finish();
+        }
     }
 
     public void asyncSpans() throws Exception {
