@@ -2,16 +2,16 @@ package io.opentracing.mdcdemo;
 
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
-import io.opentracing.SpanScheduler;
+import io.opentracing.Scheduler;
 import org.slf4j.MDC;
 
 import java.util.Map;
 
 /**
- * MDCSpanScheduler illustrates the core SpanScheduler concepts and capabilities to a first approximation. Not
+ * MDCScheduler illustrates the core Scheduler concepts and capabilities to a first approximation. Not
  * production-quality code.
  */
-public class MDCSpanScheduler implements SpanScheduler {
+public class MDCScheduler implements Scheduler {
     private final ThreadLocal<MDCSnapshot> tlsSnapshot = new ThreadLocal<MDCSnapshot>();
 
     class MDCSnapshot implements Continuation {

@@ -1,7 +1,6 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.SpanScheduler;
-import io.opentracing.ThreadLocalScheduler;
+import io.opentracing.Scheduler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,11 +9,11 @@ import java.util.concurrent.*;
 
 public class TracedExecutorService implements ExecutorService {
     private ExecutorService executor;
-    private SpanScheduler scheduler;
+    private Scheduler scheduler;
 
-    public TracedExecutorService(ExecutorService executor, SpanScheduler scheduler) {
+    public TracedExecutorService(ExecutorService executor, Scheduler scheduler) {
         if (executor == null) throw new NullPointerException("Executor is <null>.");
-        if (scheduler == null) throw new NullPointerException("SpanScheduler is <null>.");
+        if (scheduler == null) throw new NullPointerException("Scheduler is <null>.");
         this.executor = executor;
         this.scheduler = scheduler;
     }

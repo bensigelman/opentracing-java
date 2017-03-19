@@ -1,20 +1,20 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.SpanScheduler;
+import io.opentracing.Scheduler;
 import io.opentracing.Span;
 
 import java.util.concurrent.Callable;
 
 public class TracedCallable<T> implements Callable<T> {
-    private SpanScheduler.Continuation continuation;
-    private SpanScheduler scheduler;
+    private Scheduler.Continuation continuation;
+    private Scheduler scheduler;
     private Callable<T> callable;
 
-    public TracedCallable(Callable<T> callable, SpanScheduler scheduler) {
+    public TracedCallable(Callable<T> callable, Scheduler scheduler) {
         this(callable, scheduler.active(), scheduler);
     }
 
-    public TracedCallable(Callable<T> callable, Span span, SpanScheduler scheduler) {
+    public TracedCallable(Callable<T> callable, Span span, Scheduler scheduler) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
         this.scheduler = scheduler;

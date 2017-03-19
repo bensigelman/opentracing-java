@@ -1,19 +1,19 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.SpanScheduler;
+import io.opentracing.Scheduler;
 import io.opentracing.Span;
 
 
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
-    private SpanScheduler schedulerer;
-    private SpanScheduler.Continuation continuation;
+    private Scheduler schedulerer;
+    private Scheduler.Continuation continuation;
 
-    public TracedRunnable(Runnable runnable, SpanScheduler schedulerer) {
+    public TracedRunnable(Runnable runnable, Scheduler schedulerer) {
         this(runnable, schedulerer.active(), schedulerer);
     }
 
-    public TracedRunnable(Runnable runnable, Span span, SpanScheduler schedulerer) {
+    public TracedRunnable(Runnable runnable, Span span, Scheduler schedulerer) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
         this.schedulerer = schedulerer;
