@@ -23,22 +23,22 @@
         <version>0.20.11-SNAPSHOT</version>
     </parent>
 
-    <artifactId>opentracing-api</artifactId>
-    <name>OpenTracing API</name>
-    <description>OpenTracing Java API</description>
+    <artifactId>opentracing-mdc-demo</artifactId>
+    <name>OpenTracing-mdc-demo</name>
+    <description>OpenTracing MDC Demo</description>
 
     <properties>
         <main.basedir>${project.basedir}/..</main.basedir>
-        <main.java.version>1.6</main.java.version>
-        <main.signature.artifact>java16</main.signature.artifact>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opentracing-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opentracing-mock</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -56,4 +56,5 @@
             <version>1.7.23</version>
         </dependency>
     </dependencies>
+
 </project>
