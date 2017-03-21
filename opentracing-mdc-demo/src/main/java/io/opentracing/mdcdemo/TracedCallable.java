@@ -22,7 +22,12 @@ public class TracedCallable<T> implements Callable<T> {
     }
 
     public T call() throws Exception {
+<<<<<<< Updated upstream
         final Span span = continuation.activate(true);
+=======
+        // NOTE: There's no way to be sure about the finishOnDeactivate parameter to activate(), so we play it safe.
+        final Span span = continuation.activate(false);
+>>>>>>> Stashed changes
         try {
             return callable.call();
         } finally {

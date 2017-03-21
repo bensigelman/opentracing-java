@@ -12,6 +12,7 @@ import java.util.Map;
  * production-quality code.
  */
 public class MDCScheduler implements Scheduler {
+<<<<<<< Updated upstream
     private final ThreadLocal<MDCSnapshot> tlsSnapshot = new ThreadLocal<MDCSnapshot>();
 
     class MDCSnapshot implements Continuation {
@@ -21,6 +22,17 @@ public class MDCScheduler implements Scheduler {
         private MDCSnapshot toRestore = null;
 
         MDCSnapshot(Span span) {
+=======
+    private final ThreadLocal<MDCContinuation> tlsSnapshot = new ThreadLocal<MDCContinuation>();
+
+    class MDCContinuation implements Continuation {
+        private final Map<String, String> mdcContext;
+        private final Span span;
+        private boolean finishOnDeactivate;
+        private MDCContinuation toRestore = null;
+
+        MDCContinuation(Span span) {
+>>>>>>> Stashed changes
             this.mdcContext = MDC.getCopyOfContextMap();
             this.span = span;
         }
@@ -57,6 +69,7 @@ public class MDCScheduler implements Scheduler {
     }
 
     @Override
+<<<<<<< Updated upstream
     public MDCSnapshot captureActive() {
         return new MDCSnapshot(active());
     }
@@ -64,11 +77,24 @@ public class MDCScheduler implements Scheduler {
     @Override
     public MDCSnapshot capture(Span span) {
         return new MDCSnapshot(span);
+=======
+    public MDCContinuation captureActive() {
+        return new MDCContinuation(active());
+    }
+
+    @Override
+    public MDCContinuation capture(Span span) {
+        return new MDCContinuation(span);
+>>>>>>> Stashed changes
     }
 
     @Override
     public Span active() {
+<<<<<<< Updated upstream
         MDCSnapshot snapshot = tlsSnapshot.get();
+=======
+        MDCContinuation snapshot = tlsSnapshot.get();
+>>>>>>> Stashed changes
         if (snapshot == null) {
             return null;
         }
