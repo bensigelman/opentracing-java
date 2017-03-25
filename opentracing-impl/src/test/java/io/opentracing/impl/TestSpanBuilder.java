@@ -13,13 +13,13 @@
  */
 package io.opentracing.impl;
 
-import io.opentracing.Scheduler;
+import io.opentracing.ActiveSpanHolder;
 
 
 final class TestSpanBuilder extends AbstractSpanBuilder {
 
-    public TestSpanBuilder(String operationName, Scheduler scheduler) {
-        super(operationName, scheduler);
+    public TestSpanBuilder(String operationName, ActiveSpanHolder activeSpanHolder) {
+        super(operationName, activeSpanHolder);
     }
 
     @Override

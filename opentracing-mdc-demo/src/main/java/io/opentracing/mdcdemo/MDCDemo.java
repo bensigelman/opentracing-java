@@ -1,8 +1,9 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.Scheduler;
+import io.opentracing.ActiveSpanHolder;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.AutoContinuation;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import org.slf4j.Logger;
@@ -25,7 +26,8 @@ public class MDCDemo {
     }
 
     public void trivialChild() throws Exception {
-        try (Scheduler.Continuation c = this.tracer.buildSpan("trivialParent").startAndActivate(true)) {
+        try (ActiveSpanHolder.Continuation c = AutoContinuation.wrap(
+                this.tracer.buildSpan("trivialParent").startAndActivate())) {
             // The child will automatically know about the parent.
             Span child = this.tracer.buildSpan("trivialChild").start();
             child.finish();
@@ -43,8 +45,19 @@ public class MDCDemo {
         final List<Future<?>> futures = new ArrayList<>();
         final List<Future<?>> subfutures = new ArrayList<>();
 
+        /*
+
+         stream of consciousness: could take the wrapped ASH as a param at construction time, then require a bare Span
+         instance to refcount, I guess just via the #capture(Span) method. The impl would defer to capture the wrapped
+         Continuation and, well, wrap and return it. #activate() would defer --- darn, this breaks in the same way. The
+         fundamental problem is that the Tracer's ASH will not know about the wrapper one.
+
+         one option would be to wrap Span itself, though that would require refcount-friendly hooks.
+         */
+
         // Create a parent Continuation for all of the async activity.
-        try (final Scheduler.Continuation parentContinuation = tracer.buildSpan("parent").startAndActivate(true);) {
+        try (final ActiveSpanHolder.Continuation parentContinuation = AutoContinuation.wrap(
+                tracer.buildSpan("parent").startAndActivate());) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -54,19 +67,19 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (final Scheduler.Continuation childContinuation =
-                                     tracer.buildSpan("child_" + j).startAndActivate(false);) {
+                        try (final ActiveSpanHolder.Continuation childContinuation = AutoContinuation.wrap(
+                                     tracer.buildSpan("child_" + j).startAndActivate());) {
                             Thread.currentThread().sleep(1000);
-                            tracer.scheduler().active().log("awoke");
+                            tracer.scheduler().activeSpan().log("awoke");
                             Runnable r = new Runnable() {
                                 @Override
                                 public void run() {
-                                    Span active = tracer.scheduler().active();
+                                    Span active = tracer.scheduler().activeSpan();
                                     active.log("awoke again");
                                     // Create a grandchild for each child.
                                     Span grandchild = tracer.buildSpan("grandchild_" + j).start();
                                     grandchild.finish();
-                                    active.finish();
+                                    // active.finish();
                                 }
                             };
                             subfutures.add(otExecutor.submit(r));
@@ -93,7 +106,7 @@ public class MDCDemo {
         final Logger logger = org.slf4j.LoggerFactory.getLogger("hack");
         MDC.put("mdcKey", "mdcVal");
 
-        final MockTracer tracer = new MockTracer(new MDCScheduler());
+        final MockTracer tracer = new MockTracer(new MDCActiveSpanHolder());
 
         // Do stuff with the MockTracer.
         {

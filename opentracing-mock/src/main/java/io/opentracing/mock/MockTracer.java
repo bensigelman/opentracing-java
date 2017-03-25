@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.opentracing.*;
-import io.opentracing.Scheduler;
+import io.opentracing.ActiveSpanHolder;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 
@@ -36,26 +36,26 @@ import io.opentracing.propagation.TextMap;
 public class MockTracer implements Tracer {
     private List<MockSpan> finishedSpans = new ArrayList<>();
     private final Propagator propagator;
-    private Scheduler scheduler;
+    private ActiveSpanHolder activeSpanHolder;
 
     public MockTracer() {
         this(Propagator.PRINTER);
     }
 
-    public MockTracer(Scheduler scheduler) {
-        this(scheduler, Propagator.PRINTER);
+    public MockTracer(ActiveSpanHolder activeSpanHolder) {
+        this(activeSpanHolder, Propagator.PRINTER);
     }
 
-    public MockTracer(Scheduler scheduler, Propagator propagator) {
+    public MockTracer(ActiveSpanHolder activeSpanHolder, Propagator propagator) {
         this.propagator = propagator;
-        this.scheduler = scheduler;
+        this.activeSpanHolder = activeSpanHolder;
     }
 
     /**
      * Create a new MockTracer that passes through any calls to inject() and/or extract().
      */
     public MockTracer(Propagator propagator) {
-        this(new ThreadLocalScheduler(), propagator);
+        this(new ThreadLocalActiveSpanHolder(), propagator);
     }
 
     /**
@@ -155,15 +155,15 @@ public class MockTracer implements Tracer {
     @Override
     public SpanBuilder buildSpan(String operationName) {
         SpanBuilder sb = new SpanBuilder(operationName);
-        if (this.scheduler != null) {
-            sb.asChildOf(this.scheduler.activeContext());
+        if (this.activeSpanHolder != null) {
+            sb.asChildOf(this.activeSpanHolder.activeContext());
         }
         return sb;
     }
 
     @Override
-    public Scheduler scheduler() {
-        return scheduler;
+    public ActiveSpanHolder scheduler() {
+        return activeSpanHolder;
     }
 
     @Override
@@ -245,16 +245,16 @@ public class MockTracer implements Tracer {
                 this.startMicros = MockSpan.nowMicros();
             }
             if (firstParent == null) {
-                firstParent = (MockSpan.MockContext) scheduler.activeContext();
+                firstParent = (MockSpan.MockContext) activeSpanHolder.activeContext();
             }
             return new MockSpan(MockTracer.this, operationName, startMicros, initialTags, firstParent);
         }
 
         @Override
-        public Scheduler.Continuation startAndActivate(boolean finishOnDeactivate) {
+        public ActiveSpanHolder.Continuation startAndActivate() {
             MockSpan span = this.start();
-            Scheduler.Continuation rval = scheduler.capture(span);
-            rval.activate(finishOnDeactivate);
+            ActiveSpanHolder.Continuation rval = activeSpanHolder.capture(span);
+            rval.activate();
             return rval;
         }
 

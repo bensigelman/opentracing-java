@@ -1,33 +1,28 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.Scheduler;
+import io.opentracing.ActiveSpanHolder;
+import io.opentracing.AutoContinuation;
 import io.opentracing.Span;
 
 import java.util.concurrent.Callable;
 
 public class TracedCallable<T> implements Callable<T> {
-    private Scheduler.Continuation continuation;
-    private Scheduler scheduler;
+    private ActiveSpanHolder.Continuation continuation;
     private Callable<T> callable;
 
-    public TracedCallable(Callable<T> callable, Scheduler scheduler) {
-        this(callable, scheduler.active(), scheduler);
+    public TracedCallable(Callable<T> callable, ActiveSpanHolder activeSpanHolder) {
+        this(callable, activeSpanHolder.active());
     }
 
-    public TracedCallable(Callable<T> callable, Span span, Scheduler scheduler) {
+    public TracedCallable(Callable<T> callable, ActiveSpanHolder.Continuation continuation) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
-        this.scheduler = scheduler;
-        this.continuation = scheduler.captureActive();
+        this.continuation = AutoContinuation.wrap(continuation.capture());
     }
 
     public T call() throws Exception {
-<<<<<<< Updated upstream
-        final Span span = continuation.activate(true);
-=======
-        // NOTE: There's no way to be sure about the finishOnDeactivate parameter to activate(), so we play it safe.
-        final Span span = continuation.activate(false);
->>>>>>> Stashed changes
+        continuation.activate();
+        final Span span = continuation.span();
         try {
             return callable.call();
         } finally {

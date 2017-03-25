@@ -1,6 +1,6 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.Scheduler;
+import io.opentracing.ActiveSpanHolder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,33 +9,33 @@ import java.util.concurrent.*;
 
 public class TracedExecutorService implements ExecutorService {
     private ExecutorService executor;
-    private Scheduler scheduler;
+    private ActiveSpanHolder activeSpanHolder;
 
-    public TracedExecutorService(ExecutorService executor, Scheduler scheduler) {
+    public TracedExecutorService(ExecutorService executor, ActiveSpanHolder activeSpanHolder) {
         if (executor == null) throw new NullPointerException("Executor is <null>.");
-        if (scheduler == null) throw new NullPointerException("Scheduler is <null>.");
+        if (activeSpanHolder == null) throw new NullPointerException("ActiveSpanHolder is <null>.");
         this.executor = executor;
-        this.scheduler = scheduler;
+        this.activeSpanHolder = activeSpanHolder;
     }
 
     @Override
     public void execute(Runnable command) {
-        executor.execute(new TracedRunnable(command, scheduler));
+        executor.execute(new TracedRunnable(command, activeSpanHolder));
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return executor.submit(new TracedRunnable(task, scheduler));
+        return executor.submit(new TracedRunnable(task, activeSpanHolder));
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return executor.submit(new TracedRunnable(task, scheduler), result);
+        return executor.submit(new TracedRunnable(task, activeSpanHolder), result);
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return executor.submit(new TracedCallable(task, scheduler));
+        return executor.submit(new TracedCallable(task, activeSpanHolder));
     }
 
     @Override
@@ -89,7 +89,7 @@ public class TracedExecutorService implements ExecutorService {
         Collection<? extends Callable<T>> tasks) {
         if (tasks == null) throw new NullPointerException("Collection of tasks is <null>.");
         Collection<Callable<T>> result = new ArrayList<Callable<T>>(tasks.size());
-        for (Callable<T> task : tasks) result.add(new TracedCallable(task, scheduler));
+        for (Callable<T> task : tasks) result.add(new TracedCallable(task, activeSpanHolder));
         return result;
     }
 }

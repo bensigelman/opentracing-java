@@ -23,7 +23,7 @@ public interface Tracer {
     /**
      * Return a new SpanBuilder for a Span with the given `operationName`.
      *
-     * <p>If there is an active Span according to the {@link Tracer#scheduler()}'s {@link Scheduler#activeContext},
+     * <p>If there is an active Span according to the {@link Tracer#scheduler()}'s {@link ActiveSpanHolder#activeContext},
      * buildSpan will automatically reference that active Span as a parent.
      *
      * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
@@ -32,7 +32,7 @@ public interface Tracer {
      * <pre>{@code
      *   Tracer tracer = ...
      *
-     *   // Note: if there is an {@link Scheduler#active()} Span, it will be treated as the parent of workSpan.
+     *   // Note: if there is an {@link ActiveSpanHolder#active()} Span, it will be treated as the parent of workSpan.
      *   Span workSpan = tracer.buildSpan("DoWork")
      *                         .start();
      *
@@ -47,11 +47,11 @@ public interface Tracer {
     SpanBuilder buildSpan(String operationName);
 
     /**
-     * @return the Scheduler associated with this Tracer. Must not be null.
-     * @see Scheduler
-     * @see ThreadLocalScheduler a simple built-in thread-local-storage Scheduler
+     * @return the ActiveSpanHolder associated with this Tracer. Must not be null.
+     * @see ActiveSpanHolder
+     * @see ThreadLocalActiveSpanHolder a simple built-in thread-local-storage ActiveSpanHolder
      */
-    Scheduler scheduler();
+    ActiveSpanHolder scheduler();
 
     /**
      * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -119,7 +119,7 @@ public interface Tracer {
          * <p>
          * If no references are added manually (and {@link SpanBuilder#asRoot()} is not invoked) before
          * calling {@link SpanBuilder#start()}, an inferred reference is created to any
-         * {@link Scheduler#activeContext()} context.
+         * {@link ActiveSpanHolder#activeContext()} context.
          *
          * @param referenceType the reference type, typically one of the constants defined in References
          * @param referencedContext the SpanContext being referenced; e.g., for a References.CHILD_OF referenceType, the
@@ -131,7 +131,7 @@ public interface Tracer {
 
         /**
          * Remove any explicit (e.g., via {@link SpanBuilder#addReference(String,SpanContext)}) or implicit (e.g., via
-         * {@link Scheduler#activeContext()}) references to parent / predecessor SpanContexts, thus making the built
+         * {@link ActiveSpanHolder#activeContext()}) references to parent / predecessor SpanContexts, thus making the built
          * Span a "root" of a Trace tree/graph.
          *
          * <p>
@@ -153,31 +153,29 @@ public interface Tracer {
         SpanBuilder withStartTimestamp(long microseconds);
 
         /**
-         * Returns a newly started and {@linkplain Scheduler.Continuation#activate(boolean) activated}
-         * {@link Scheduler.Continuation}.
+         * Returns a newly started and {@linkplain ActiveSpanHolder.Continuation#activate(boolean) activated}
+         * {@link ActiveSpanHolder.Continuation}.
          *
          * <p>
          *
          * Note that the Continuation supports try-with-resources. For example:
          * <pre>{@code
-         *     try (Scheduler.Continuation spanCont = tracer.buildSpan("...").startAndActivate(true)) {
+         *     try (ActiveSpanHolder.Continuation spanCont = tracer.buildSpan("...").startAndActivate(true)) {
          *         // Do work
          *         Span span = tracer.scheduler().active();
          *         span.setTag( ... );  // etc, etc
          *     }
          * }</pre>
          *
-         * @param finishOnDeactivate if true, the {@link Span} encapsulated by the {@link Scheduler.Continuation} will
-         *                   finish() upon invocation of {@link Scheduler.Continuation#deactivate()}.
-         * @return a pre-activated {@link Scheduler.Continuation}
+         * @return a pre-activated {@link ActiveSpanHolder.Continuation}
          *
-         * @see Scheduler.Continuation#activate(boolean)
+         * @see ActiveSpanHolder.Continuation#activate(boolean)
          */
-        Scheduler.Continuation startAndActivate(boolean finishOnDeactivate);
+        ActiveSpanHolder.Continuation startAndActivate();
 
         /**
          * @return the newly-started Span instance, which will *not* be automatically activated by the
-         *         {@link Scheduler}
+         *         {@link ActiveSpanHolder}
          */
         Span start();
 

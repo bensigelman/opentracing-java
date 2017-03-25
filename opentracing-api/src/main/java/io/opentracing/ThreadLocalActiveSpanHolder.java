@@ -1,16 +1,21 @@
 package io.opentracing;
 
 /**
- * ThreadLocalScheduler is a trivial Scheduler implementation that relies on Java's thread-local storage primitives.
+ * ThreadLocalActiveSpanHolder is a trivial ActiveSpanHolder implementation that relies on Java's thread-local storage primitives.
  *
- * @see Scheduler
+ * @see ActiveSpanHolder
  * @see Tracer#scheduler()
  */
-public class ThreadLocalScheduler implements Scheduler {
+public class ThreadLocalActiveSpanHolder implements ActiveSpanHolder {
     private final ThreadLocal<Continuation> threadLocalActive = new ThreadLocal<Continuation>();
 
     @Override
-    public Span active() {
+    public Continuation active() {
+        return threadLocalActive.get();
+    }
+
+    @Override
+    public Span activeSpan() {
         Continuation state = threadLocalActive.get();
         return (state == null) ? null : state.span;
     }
@@ -22,29 +27,21 @@ public class ThreadLocalScheduler implements Scheduler {
 
     @Override
     public SpanContext activeContext() {
-        Span active = this.active();
+        Span active = this.activeSpan();
         if (active == null) return null;
         return active.context();
     }
 
-    @Override
-    public Continuation captureActive() {
-        return capture(active());
-    }
-
-    class Continuation implements Scheduler.Continuation {
+    class Continuation implements ActiveSpanHolder.Continuation {
         private final Span span;
-        private boolean finishOnDeactivate;
         private Continuation toRestore = null;
 
         private Continuation(Span span) { this.span = span; }
 
         @Override
-        public Span activate(boolean finishOnDeactivate) {
-            this.finishOnDeactivate = finishOnDeactivate;
+        public void activate() {
             toRestore = threadLocalActive.get();
             threadLocalActive.set(this);
-            return span;
         }
 
         @Override
@@ -52,12 +49,19 @@ public class ThreadLocalScheduler implements Scheduler {
             this.deactivate();
         }
 
+
+        @Override
+        public Span span() {
+            return span;
+        }
+
+        @Override
+        public ActiveSpanHolder.Continuation capture() {
+            return null;
+        }
+
         @Override
         public void deactivate() {
-            if (span != null && this.finishOnDeactivate) {
-                span.finish();
-            }
-
             if (threadLocalActive.get() != this) {
                 // This should not happen; bail out.
                 return;

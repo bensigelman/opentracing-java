@@ -1,29 +1,29 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.Scheduler;
+import io.opentracing.ActiveSpanHolder;
+import io.opentracing.AutoContinuation;
 import io.opentracing.Span;
 
 
 public class TracedRunnable implements Runnable {
     private Runnable runnable;
-    private Scheduler schedulerer;
-    private Scheduler.Continuation continuation;
+    private ActiveSpanHolder.Continuation continuation;
 
-    public TracedRunnable(Runnable runnable, Scheduler schedulerer) {
-        this(runnable, schedulerer.active(), schedulerer);
+    public TracedRunnable(Runnable runnable, ActiveSpanHolder holder) {
+        this(runnable, holder.active());
     }
 
-    public TracedRunnable(Runnable runnable, Span span, Scheduler schedulerer) {
+    public TracedRunnable(Runnable runnable, ActiveSpanHolder.Continuation continuation) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
-        this.schedulerer = schedulerer;
-        this.continuation = schedulerer.captureActive();
+        this.continuation = AutoContinuation.wrap(continuation.capture());
     }
 
     @Override
     public void run() {
         // NOTE: There's no way to be sure about the finishOnDeactivate parameter to activate(), so we play it safe.
-        final Span span = this.continuation.activate(false);
+        this.continuation.activate();
+        final Span span = this.continuation.span();
         try {
             runnable.run();
         } finally {

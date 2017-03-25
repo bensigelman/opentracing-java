@@ -66,8 +66,8 @@ final class NoopSpanBuilderImpl implements NoopSpanBuilder {
     }
 
     @Override
-    public Scheduler.Continuation startAndActivate(boolean finishOnDeactivate) {
-        return NoopScheduler.NOOP_CONTINUATION;
+    public ActiveSpanHolder.Continuation startAndActivate() {
+        return NoopActiveSpanHolder.NOOP_CONTINUATION;
     }
 
     @Override
