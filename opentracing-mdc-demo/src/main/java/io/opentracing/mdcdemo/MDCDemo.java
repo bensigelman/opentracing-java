@@ -3,7 +3,6 @@ package io.opentracing.mdcdemo;
 import io.opentracing.ActiveSpanHolder;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.AutoContinuation;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import org.slf4j.Logger;
@@ -26,8 +25,7 @@ public class MDCDemo {
     }
 
     public void trivialChild() throws Exception {
-        try (ActiveSpanHolder.Continuation c = AutoContinuation.wrap(
-                this.tracer.buildSpan("trivialParent").startAndActivate())) {
+        try (ActiveSpanHolder.Continuation c = this.tracer.buildSpan("trivialParent").startAndActivate()) {
             // The child will automatically know about the parent.
             Span child = this.tracer.buildSpan("trivialChild").start();
             child.finish();
@@ -56,8 +54,7 @@ public class MDCDemo {
          */
 
         // Create a parent Continuation for all of the async activity.
-        try (final ActiveSpanHolder.Continuation parentContinuation = AutoContinuation.wrap(
-                tracer.buildSpan("parent").startAndActivate());) {
+        try (final ActiveSpanHolder.Continuation parentContinuation = tracer.buildSpan("parent").startAndActivate();) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -67,8 +64,8 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (final ActiveSpanHolder.Continuation childContinuation = AutoContinuation.wrap(
-                                     tracer.buildSpan("child_" + j).startAndActivate());) {
+                        try (final ActiveSpanHolder.Continuation childContinuation =
+                                     tracer.buildSpan("child_" + j).startAndActivate();) {
                             Thread.currentThread().sleep(1000);
                             tracer.scheduler().activeSpan().log("awoke");
                             Runnable r = new Runnable() {

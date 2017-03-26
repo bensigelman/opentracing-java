@@ -1,7 +1,6 @@
 package io.opentracing.mdcdemo;
 
 import io.opentracing.ActiveSpanHolder;
-import io.opentracing.AutoContinuation;
 import io.opentracing.Span;
 
 import java.util.concurrent.Callable;
@@ -17,7 +16,7 @@ public class TracedCallable<T> implements Callable<T> {
     public TracedCallable(Callable<T> callable, ActiveSpanHolder.Continuation continuation) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
-        this.continuation = AutoContinuation.wrap(continuation.capture());
+        this.continuation = continuation.capture();
     }
 
     public T call() throws Exception {

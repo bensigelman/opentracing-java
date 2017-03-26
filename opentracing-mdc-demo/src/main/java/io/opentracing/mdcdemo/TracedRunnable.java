@@ -1,7 +1,6 @@
 package io.opentracing.mdcdemo;
 
 import io.opentracing.ActiveSpanHolder;
-import io.opentracing.AutoContinuation;
 import io.opentracing.Span;
 
 
@@ -16,7 +15,7 @@ public class TracedRunnable implements Runnable {
     public TracedRunnable(Runnable runnable, ActiveSpanHolder.Continuation continuation) {
         if (runnable == null) throw new NullPointerException("Runnable is <null>.");
         this.runnable = runnable;
-        this.continuation = AutoContinuation.wrap(continuation.capture());
+        this.continuation = continuation.capture();
     }
 
     @Override

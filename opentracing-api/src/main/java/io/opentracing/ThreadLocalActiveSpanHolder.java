@@ -1,12 +1,14 @@
 package io.opentracing;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * ThreadLocalActiveSpanHolder is a trivial ActiveSpanHolder implementation that relies on Java's thread-local storage primitives.
  *
  * @see ActiveSpanHolder
  * @see Tracer#scheduler()
  */
-public class ThreadLocalActiveSpanHolder implements ActiveSpanHolder {
+public class ThreadLocalActiveSpanHolder extends ActiveSpanHolder {
     private final ThreadLocal<Continuation> threadLocalActive = new ThreadLocal<Continuation>();
 
     @Override
@@ -15,28 +17,18 @@ public class ThreadLocalActiveSpanHolder implements ActiveSpanHolder {
     }
 
     @Override
-    public Span activeSpan() {
-        Continuation state = threadLocalActive.get();
-        return (state == null) ? null : state.span;
+    protected ActiveSpanHolder.Continuation doCapture(Span span, AtomicInteger refCount) {
+        return new ThreadLocalActiveSpanHolder.Continuation(span, refCount);
     }
 
-    @Override
-    public Continuation capture(Span span) {
-        return new Continuation(span);
-    }
-
-    @Override
-    public SpanContext activeContext() {
-        Span active = this.activeSpan();
-        if (active == null) return null;
-        return active.context();
-    }
-
-    class Continuation implements ActiveSpanHolder.Continuation {
+    class Continuation extends ActiveSpanHolder.Continuation {
         private final Span span;
         private Continuation toRestore = null;
 
-        private Continuation(Span span) { this.span = span; }
+        private Continuation(Span span, AtomicInteger refCount) {
+            super(refCount);
+            this.span = span;
+        }
 
         @Override
         public void activate() {
@@ -45,28 +37,22 @@ public class ThreadLocalActiveSpanHolder implements ActiveSpanHolder {
         }
 
         @Override
-        public void close() {
-            this.deactivate();
-        }
-
-
-        @Override
         public Span span() {
             return span;
         }
 
         @Override
-        public ActiveSpanHolder.Continuation capture() {
-            return null;
-        }
-
-        @Override
-        public void deactivate() {
+        protected void doDeactivate() {
             if (threadLocalActive.get() != this) {
                 // This should not happen; bail out.
                 return;
             }
             threadLocalActive.set(toRestore);
+        }
+
+        @Override
+        protected ActiveSpanHolder holder() {
+            return ThreadLocalActiveSpanHolder.this;
         }
     }
 }
