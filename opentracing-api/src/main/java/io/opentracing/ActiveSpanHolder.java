@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * ActiveSpanHolder allows an existing (possibly thread-local-aware) execution context provider to also manage an
+ * {@link ActiveSpanHolder} allows an existing (possibly thread-local-aware) execution context provider to also manage an
  * actively-scheduled OpenTracing Span.
  *
  * <p>
@@ -12,29 +12,24 @@ import java.util.concurrent.atomic.AtomicInteger;
  * work accomplished by the surrounding application code. That active Span may be accessed via the
  * {@link ActiveSpanHolder#active()} method. If the application needs to defer work that should be part of the same
  * Span, the ActiveSpanHolder provides a {@link ActiveSpanHolder#capture(Span)} method that returns a
- * {@link Continuation}; this activation context may be used to re-activate and deactivate the
+ * {@link Continuation}; this continuation / activation context may be used to re-activate and deactivate the
  * captured Span in that other asynchronous executor and/or thread.
- *
- * XXX: need to do something where activate/deactivate is bare, but there's an opt-in refcounting scheme which can wrap
- * a Span, ideally at the OT level and ideally at buildSpan-time. Oh, maybe for the Continuation-building start variant.
- * Actually, this would require changes to capture() (as well as refcounting on Span activation and deactivation).
  */
 public abstract class ActiveSpanHolder {
-    // XXX START HERE: create an Observer API that gets invoked for capture, activate, and deactivate. Ideally one
-    // observer per Span instance, though maybe Span is provided as an arg?
 
     /**
-     * A Continuation can be used *once* to activate a Span and other execution context, then deactivate once the
-     * active period has concluded. (In practice, this active period typically extends for the length of a deferred
-     * async closure invocation.)
+     * A {@link Continuation} can be used *once* to activate a Span and some non-OpenTracing execution context (e.g.,
+     * MDC), then deactivate when processing activity moves on to another Span. (In practice, this active period
+     * typically extends for the length of a deferred async closure invocation.)
      *
      * <p>
-     * Most users do not directly interact with Continuation, activate(), or deactivate(), but rather use
-     * ActiveSpanHolder-aware Runnables/Callables/Executors. Those higher-level primitives need not be defined within the
-     * OpenTracing core API.
+     * Most users do not directly interact with {@link Continuation}, {@link Continuation#activate()} or
+     * {@link Continuation#deactivate()}, but rather use {@link ActiveSpanHolder}-aware Runnables/Callables/Executors.
+     * Those higher-level primitives need not be defined within the OpenTracing core API, and so they are not.
      *
      * <p>
-     * NOTE: We extend Closeable rather than AutoCloseable in order to keep support for JDK1.6.
+     * NOTE: {@link Continuation} extends {@link java.io.Closeable} rather than AutoCloseable in order to keep support
+     * for JDK1.6.
      *
      * @see ActiveSpanHolder#capture(Span)
      */
@@ -56,6 +51,9 @@ public abstract class ActiveSpanHolder {
          */
         public abstract void activate();
 
+        /**
+         * @return the {@link Span} associated with this {@link Continuation}, or null if there is no such {@link Span}.
+         */
         public abstract Span span();
 
         /**
@@ -71,19 +69,40 @@ public abstract class ActiveSpanHolder {
             decRef();
         }
 
+        /**
+         * Per the {@link java.io.Closeable} API.
+         */
         @Override
         public final void close() {
             this.deactivate();
         }
 
+        /**
+         * Capture and take a reference to the {@link Span} associated with this {@link Continuation} and any 3rd-party
+         * execution context of interest.
+         *
+         * @return a new {@link Continuation} to {@link Continuation#activate()} at the appropriate time.
+         */
         public final Continuation capture() {
             refCount.incrementAndGet();
             return holder().doCapture(span(), refCount);
         }
 
+        /**
+         * Implementations must clean up any state (including thread-locals, etc) associated with the previosly active
+         * {@link Span}.
+         */
         protected abstract void doDeactivate();
+
+        /**
+         * Return the {@link ActiveSpanHolder} associated wih this {@link Continuation}.
+         */
         protected abstract ActiveSpanHolder holder();
 
+        /**
+         * Decrement the {@link Continuation}'s reference count, calling {@link Span#finish()} if no more references
+         * remain.
+         */
         final void decRef() {
             if (0 == refCount.decrementAndGet()) {
                 Span span = this.span();
@@ -94,20 +113,10 @@ public abstract class ActiveSpanHolder {
         }
     }
 
-    public abstract Continuation active();
-
     /**
-     * Explicitly capture the newly-started Span along with any active state (e.g., MDC state) from the current
-     * execution context.
-     *
-     * @param span the Span just started
-     * @return a Continuation that represents the active Span and any other ActiveSpanHolder-specific context, even if the
-     *     active Span is null.
+     * @return the active {@link Continuation}, or null if none could be found.
      */
-    public final Continuation capture(Span span) {
-        Continuation rval = doCapture(span, new AtomicInteger(1));
-        return rval;
-    }
+    public abstract Continuation active();
 
     protected abstract Continuation doCapture(Span span, AtomicInteger refCount);
 
@@ -122,6 +131,19 @@ public abstract class ActiveSpanHolder {
             return null;
         }
         return continuation.span();
+    }
+
+    /**
+     * Explicitly capture the newly-started Span along with any active state (e.g., MDC state) from the current
+     * execution context.
+     *
+     * @param span the Span just started
+     * @return a Continuation that represents the active Span and any other ActiveSpanHolder-specific context, even if the
+     *     active Span is null.
+     */
+    public final Continuation capture(Span span) {
+        Continuation rval = doCapture(span, new AtomicInteger(1));
+        return rval;
     }
 
     /**
