@@ -13,10 +13,9 @@
  */
 package io.opentracing.impl;
 
-import io.opentracing.References;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
+import io.opentracing.*;
+import io.opentracing.ActiveSpanHolder;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,15 +28,18 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
 
     protected String operationName = null;
     protected final List<Reference> references = new ArrayList<>();
+    protected boolean forceRoot = false;
     protected Instant start = Instant.now();
 
+    private final ActiveSpanHolder activeSpanHolder;
     private final Map<String, String> stringTags = new HashMap<>();
     private final Map<String, Boolean> booleanTags = new HashMap<>();
     private final Map<String, Number> numberTags = new HashMap<>();
     private final Map<String, String> baggage = new HashMap<>();
 
-    AbstractSpanBuilder(String operationName) {
+    AbstractSpanBuilder(String operationName, ActiveSpanHolder activeSpanHolder) {
         this.operationName = operationName;
+        this.activeSpanHolder = activeSpanHolder;
     }
 
     /** Create a Span, using the builder fields. */
@@ -51,6 +53,7 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
 
     @Override
     public final AbstractSpanBuilder addReference(String referenceType, SpanContext referredTo) {
+        this.forceRoot = false;
         this.references.add(new Reference(referenceType, referredTo));
         return this;
     }
@@ -63,6 +66,13 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
             withBaggageFrom(parent);
             return this.addReference(References.CHILD_OF, parent);
         }
+    }
+
+    @Override
+    public final AbstractSpanBuilder asRoot() {
+        this.references.clear();
+        this.forceRoot = true;
+        return this;
     }
 
     @Override
@@ -120,6 +130,11 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
         numberTags.entrySet().forEach((entry) -> span.setTag(entry.getKey(), entry.getValue()));
         baggage.entrySet().forEach((entry) -> span.setBaggageItem(entry.getKey(), entry.getValue()));
         return span;
+    }
+
+    @Override
+    public ActiveSpanHolder.Continuation startAndActivate() {
+        return activeSpanHolder.capture(start());
     }
 
     private void withBaggageFrom(SpanContext from) {
