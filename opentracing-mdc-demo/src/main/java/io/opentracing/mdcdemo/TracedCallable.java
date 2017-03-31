@@ -1,26 +1,25 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.ActiveSpanHolder;
-import io.opentracing.Span;
+import io.opentracing.ActiveSpanSource;
 
 import java.util.concurrent.Callable;
 
 public class TracedCallable<T> implements Callable<T> {
-    private ActiveSpanHolder.Continuation continuation;
+    private ActiveSpanSource.Continuation continuation;
     private Callable<T> callable;
 
-    public TracedCallable(Callable<T> callable, ActiveSpanHolder activeSpanHolder) {
-        this(callable, activeSpanHolder.active());
+    public TracedCallable(Callable<T> callable, ActiveSpanSource activeSpanSource) {
+        this(callable, activeSpanSource.active());
     }
 
-    public TracedCallable(Callable<T> callable, ActiveSpanHolder.ActiveSpan activeSpan) {
+    public TracedCallable(Callable<T> callable, ActiveSpanSource.Handle handle) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
-        this.continuation = activeSpan.fork();
+        this.continuation = handle.defer();
     }
 
     public T call() throws Exception {
-        try (ActiveSpanHolder.ActiveSpan activeSpan = continuation.activate()) {
+        try (ActiveSpanSource.Handle handle = continuation.activate()) {
             return callable.call();
         }
     }

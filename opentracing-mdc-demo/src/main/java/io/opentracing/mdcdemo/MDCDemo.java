@@ -1,6 +1,6 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.ActiveSpanHolder;
+import io.opentracing.ActiveSpanSource;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan;
@@ -25,7 +25,7 @@ public class MDCDemo {
     }
 
     public void trivialChild() throws Exception {
-        try (ActiveSpanHolder.ActiveSpan c = this.tracer.buildSpan("trivialParent").startAndWrap().activate()) {
+        try (ActiveSpanSource.Handle c = this.tracer.buildSpan("trivialParent").startAndWrap()) {
             // The child will automatically know about the parent.
             Span child = this.tracer.buildSpan("trivialChild").start();
             child.finish();
@@ -35,7 +35,7 @@ public class MDCDemo {
     public void asyncSpans() throws Exception {
         final Tracer tracer = this.tracer; // save typing
 
-        // Create an ExecutorService and wrap it in a TracedExecutorService.
+        // Create an ExecutorService and adopt it in a TracedExecutorService.
         ExecutorService realExecutor = Executors.newFixedThreadPool(500);
         final ExecutorService otExecutor = new TracedExecutorService(realExecutor, tracer.holder());
 
@@ -44,7 +44,7 @@ public class MDCDemo {
         final List<Future<?>> subfutures = new ArrayList<>();
 
         // Create a parent Continuation for all of the async activity.
-        try (final ActiveSpanHolder.ActiveSpan parentActiveSpan = tracer.buildSpan("parent").startAndWrap().activate();) {
+        try (final ActiveSpanSource.Handle parentHandle = tracer.buildSpan("parent").startAndWrap();) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -55,8 +55,8 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (final ActiveSpanHolder.ActiveSpan childActiveSpan =
-                                     tracer.buildSpan("child_" + j).startAndWrap().activate();) {
+                        try (final ActiveSpanSource.Handle childHandle =
+                                     tracer.buildSpan("child_" + j).startAndWrap();) {
                             Thread.currentThread().sleep(1000);
                             tracer.holder().active().span().log("awoke");
                             Runnable r = new Runnable() {
@@ -97,7 +97,7 @@ public class MDCDemo {
         final Logger logger = org.slf4j.LoggerFactory.getLogger("MDCDemo");
         MDC.put("mdcKey", "mdcVal");
 
-        final MockTracer tracer = new MockTracer(new MDCActiveSpanHolder());
+        final MockTracer tracer = new MockTracer(new MDCActiveSpanSource());
 
         // Do stuff with the MockTracer.
         {

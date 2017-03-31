@@ -1,6 +1,6 @@
 package io.opentracing.impl;
 
-import io.opentracing.ActiveSpanHolder;
+import io.opentracing.ActiveSpanSource;
 import io.opentracing.Span;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,12 +8,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by bhs on 3/30/17.
  */
-public abstract class AbstractActiveSpanHolder implements ActiveSpanHolder {
+public abstract class AbstractActiveSpanSource implements ActiveSpanSource {
 
-    public abstract class AbstractActiveSpan implements ActiveSpanHolder.ActiveSpan {
+    public abstract class AbstractHandle implements Handle {
         private final AtomicInteger refCount;
 
-        protected AbstractActiveSpan(AtomicInteger refCount) {
+        protected AbstractHandle(AtomicInteger refCount) {
             this.refCount = refCount;
         }
 
@@ -38,9 +38,9 @@ public abstract class AbstractActiveSpanHolder implements ActiveSpanHolder {
         protected abstract void doDeactivate();
 
         /**
-         * Return the {@link ActiveSpanHolder} associated wih this {@link Continuation}.
+         * Return the {@link ActiveSpanSource} associated wih this {@link Continuation}.
          */
-        protected abstract ActiveSpanHolder holder();
+        protected abstract ActiveSpanSource holder();
 
         /**
          * Decrement the {@link Continuation}'s reference count, calling {@link Span#finish()} if no more references
@@ -62,13 +62,13 @@ public abstract class AbstractActiveSpanHolder implements ActiveSpanHolder {
          * @return a new {@link Continuation} to {@link Continuation#activate()} at the appropriate time.
          */
         @Override
-        public final Continuation fork() {
+        public final Continuation defer() {
             refCount.incrementAndGet();
-            return ((AbstractActiveSpanHolder)holder()).doMakeContinuation(span(), refCount);
+            return ((AbstractActiveSpanSource)holder()).doMakeContinuation(span(), refCount);
         }
     }
 
-    public abstract class AbstractContinuation implements ActiveSpanHolder.Continuation {
+    public abstract class AbstractContinuation implements ActiveSpanSource.Continuation {
         protected final AtomicInteger refCount;
 
         protected AbstractContinuation(AtomicInteger refCount) {
@@ -78,9 +78,8 @@ public abstract class AbstractActiveSpanHolder implements ActiveSpanHolder {
     }
 
     @Override
-    public final Continuation wrapForActivation(Span span) {
-        Continuation rval = doMakeContinuation(span, new AtomicInteger(1));
-        return rval;
+    public final Handle adopt(Span span) {
+        return doMakeContinuation(span, new AtomicInteger(1)).activate();
     }
 
     protected abstract Continuation doMakeContinuation(Span span, AtomicInteger refCount);

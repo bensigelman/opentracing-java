@@ -66,8 +66,8 @@ final class NoopSpanBuilderImpl implements NoopSpanBuilder {
     }
 
     @Override
-    public ActiveSpanHolder.Continuation startAndWrap() {
-        return NoopActiveSpanHolder.NOOP_CONTINUATION;
+    public ActiveSpanSource.Handle startAndWrap() {
+        return NoopActiveSpanSource.NOOP_ACTIVE_SPAN;
     }
 
     @Override

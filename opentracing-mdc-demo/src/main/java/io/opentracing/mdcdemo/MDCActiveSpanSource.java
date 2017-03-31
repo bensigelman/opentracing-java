@@ -1,26 +1,25 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.ActiveSpanHolder;
+import io.opentracing.ActiveSpanSource;
 import io.opentracing.Span;
-import io.opentracing.impl.AbstractActiveSpanHolder;
+import io.opentracing.impl.AbstractActiveSpanSource;
 import org.slf4j.MDC;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * MDCActiveSpanHolder illustrates the core ActiveSpanHolder concepts and capabilities to a first approximation. Not
+ * MDCActiveSpanSource illustrates the core ActiveSpanSource concepts and capabilities to a first approximation. Not
  * production-quality code.
  */
-public class MDCActiveSpanHolder extends AbstractActiveSpanHolder {
-    private final ThreadLocal<MDCActiveSpan> tlsSnapshot = new ThreadLocal<MDCActiveSpan>();
+public class MDCActiveSpanSource extends AbstractActiveSpanSource {
+    private final ThreadLocal<MDCHandle> tlsSnapshot = new ThreadLocal<MDCHandle>();
 
-    class MDCActiveSpan extends AbstractActiveSpan {
+    class MDCHandle extends AbstractHandle {
         private final Span span;
-        private MDCActiveSpan toRestore = null;
+        private MDCHandle toRestore = null;
 
-        MDCActiveSpan(Span span, Map<String, String> mdcContext, AtomicInteger refCount) {
+        MDCHandle(Span span, Map<String, String> mdcContext, AtomicInteger refCount) {
             super(refCount);
             this.span = span;
             this.toRestore = tlsSnapshot.get();
@@ -43,8 +42,8 @@ public class MDCActiveSpanHolder extends AbstractActiveSpanHolder {
         }
 
         @Override
-        protected ActiveSpanHolder holder() {
-            return MDCActiveSpanHolder.this;
+        protected ActiveSpanSource holder() {
+            return MDCActiveSpanSource.this;
         }
 
     }
@@ -59,8 +58,8 @@ public class MDCActiveSpanHolder extends AbstractActiveSpanHolder {
         }
 
         @Override
-        public MDCActiveSpan activate() {
-            return new MDCActiveSpan(span, mdcContext, refCount);
+        public MDCHandle activate() {
+            return new MDCHandle(span, mdcContext, refCount);
         }
     }
 
@@ -70,7 +69,7 @@ public class MDCActiveSpanHolder extends AbstractActiveSpanHolder {
     }
 
     @Override
-    public MDCActiveSpan active() {
+    public MDCHandle active() {
         return tlsSnapshot.get();
     }
 

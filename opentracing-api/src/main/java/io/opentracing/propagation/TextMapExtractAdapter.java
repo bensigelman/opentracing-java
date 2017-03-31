@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * A TextMap carrier for use with Tracer.extract() ONLY (it has no mutating methods).
  *
- * Note that the TextMap interface can be made to wrap around arbitrary data types (not just Map<String, String> as
+ * Note that the TextMap interface can be made to adopt around arbitrary data types (not just Map<String, String> as
  * illustrated here).
  *
  * @see Tracer#extract(Format, Object)

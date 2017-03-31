@@ -23,7 +23,7 @@ public interface Tracer {
     /**
      * Return a new SpanBuilder for a Span with the given `operationName`.
      *
-     * <p>If there is an active Span according to the {@link Tracer#holder()}'s {@link ActiveSpanHolder#activeContext},
+     * <p>If there is an active Span according to the {@link Tracer#holder()}'s {@link ActiveSpanSource#activeContext},
      * buildSpan will automatically reference that active Span as a parent.
      *
      * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
@@ -32,7 +32,7 @@ public interface Tracer {
      * <pre>{@code
      *   Tracer tracer = ...
      *
-     *   // Note: if there is an {@link ActiveSpanHolder#activeContext()}, it will be treated as the parent of workSpan.
+     *   // Note: if there is an {@link ActiveSpanSource#activeContext()}, it will be treated as the parent of workSpan.
      *   Span workSpan = tracer.buildSpan("DoWork")
      *                         .start();
      *
@@ -47,11 +47,11 @@ public interface Tracer {
     SpanBuilder buildSpan(String operationName);
 
     /**
-     * @return the ActiveSpanHolder associated with this Tracer. Must not be null.
-     * @see ActiveSpanHolder
-     * @see ThreadLocalActiveSpanHolder a simple built-in thread-local-storage-based ActiveSpanHolder
+     * @return the ActiveSpanSource associated with this Tracer. Must not be null.
+     * @see ActiveSpanSource
+     * @see ThreadLocalActiveSpanSource a simple built-in thread-local-storage-based ActiveSpanSource
      */
-    ActiveSpanHolder holder();
+    ActiveSpanSource holder();
 
     /**
      * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -120,7 +120,7 @@ public interface Tracer {
          * <p>
          * If no references are added manually (and {@link SpanBuilder#asRoot()} is not invoked) before
          * calling {@link SpanBuilder#start()}, an inferred reference is created to any
-         * {@link ActiveSpanHolder#activeContext()} context.
+         * {@link ActiveSpanSource#activeContext()} context.
          *
          * @param referenceType the reference type, typically one of the constants defined in References
          * @param referencedContext the SpanContext being referenced; e.g., for a References.CHILD_OF referenceType, the
@@ -132,7 +132,7 @@ public interface Tracer {
 
         /**
          * Remove any explicit (e.g., via {@link SpanBuilder#addReference(String,SpanContext)}) or implicit (e.g., via
-         * {@link ActiveSpanHolder#activeContext()}) references to parent / predecessor SpanContexts, thus making the built
+         * {@link ActiveSpanSource#activeContext()}) references to parent / predecessor SpanContexts, thus making the built
          * Span a "root" of a Trace tree/graph.
          *
          * <p>
@@ -154,29 +154,29 @@ public interface Tracer {
         SpanBuilder withStartTimestamp(long microseconds);
 
         /**
-         * Returns a newly started and {@linkplain ActiveSpanHolder.Continuation#activate() activated}
-         * {@link ActiveSpanHolder.Continuation}.
+         * Returns a newly started and {@linkplain ActiveSpanSource.Continuation#activate() activated}
+         * {@link ActiveSpanSource.Continuation}.
          *
          * <p>
          *
          * Note that the Continuation supports try-with-resources. For example:
          * <pre>{@code
-         *     try (ActiveSpanHolder.Continuation spanCont = tracer.buildSpan("...").startAndWrap()) {
+         *     try (ActiveSpanSource.Continuation spanCont = tracer.buildSpan("...").startAndWrap()) {
          *         // Do work
          *         Span span = tracer.activeSpanHolder().activeSpan();
          *         span.setTag( ... );  // etc, etc
-         *     }  // Span finishes automatically unless captured via {@link ActiveSpanHolder.Continuation#fork }
+         *     }  // Span finishes automatically unless captured via {@link ActiveSpanSource.Continuation#fork }
          * }</pre>
          *
-         * @return a pre-activated {@link ActiveSpanHolder.Continuation}
+         * @return a pre-activated {@link ActiveSpanSource.Continuation}
          *
-         * @see ActiveSpanHolder.Continuation#activate()
+         * @see ActiveSpanSource.Continuation#activate()
          */
-        ActiveSpanHolder.Continuation startAndWrap();
+        ActiveSpanSource.Handle startAndWrap();
 
         /**
          * @return the newly-started Span instance, which will *not* be automatically activated by the
-         *         {@link ActiveSpanHolder}
+         *         {@link ActiveSpanSource}
          */
         Span start();
 
