@@ -13,19 +13,15 @@ public class TracedCallable<T> implements Callable<T> {
         this(callable, activeSpanHolder.active());
     }
 
-    public TracedCallable(Callable<T> callable, ActiveSpanHolder.Continuation continuation) {
+    public TracedCallable(Callable<T> callable, ActiveSpanHolder.ActiveSpan activeSpan) {
         if (callable == null) throw new NullPointerException("Callable is <null>.");
         this.callable = callable;
-        this.continuation = continuation.capture();
+        this.continuation = activeSpan.fork();
     }
 
     public T call() throws Exception {
-        continuation.activate();
-        final Span span = continuation.span();
-        try {
+        try (ActiveSpanHolder.ActiveSpan activeSpan = continuation.activate()) {
             return callable.call();
-        } finally {
-            continuation.deactivate();
         }
     }
 }

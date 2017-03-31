@@ -161,18 +161,18 @@ public interface Tracer {
          *
          * Note that the Continuation supports try-with-resources. For example:
          * <pre>{@code
-         *     try (ActiveSpanHolder.Continuation spanCont = tracer.buildSpan("...").startAndActivate()) {
+         *     try (ActiveSpanHolder.Continuation spanCont = tracer.buildSpan("...").startAndWrap()) {
          *         // Do work
          *         Span span = tracer.activeSpanHolder().activeSpan();
          *         span.setTag( ... );  // etc, etc
-         *     }  // Span finishes automatically unless captured via {@link ActiveSpanHolder.Continuation#capture}
+         *     }  // Span finishes automatically unless captured via {@link ActiveSpanHolder.Continuation#fork }
          * }</pre>
          *
          * @return a pre-activated {@link ActiveSpanHolder.Continuation}
          *
          * @see ActiveSpanHolder.Continuation#activate()
          */
-        ActiveSpanHolder.Continuation startAndActivate();
+        ActiveSpanHolder.Continuation startAndWrap();
 
         /**
          * @return the newly-started Span instance, which will *not* be automatically activated by the

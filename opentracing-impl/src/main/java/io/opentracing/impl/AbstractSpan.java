@@ -82,11 +82,6 @@ abstract class AbstractSpan implements Span, SpanContext {
     }
 
     @Override
-    public final void close() {
-        finish();
-    }
-
-    @Override
     public final Span setTag(String key, String value) {
         tags.put(key, value);
         return this;

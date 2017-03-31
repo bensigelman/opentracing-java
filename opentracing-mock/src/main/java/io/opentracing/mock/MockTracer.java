@@ -156,9 +156,18 @@ public class MockTracer implements Tracer {
     public SpanBuilder buildSpan(String operationName) {
         SpanBuilder sb = new SpanBuilder(operationName);
         if (this.activeSpanHolder != null) {
-            sb.asChildOf(this.activeSpanHolder.activeContext());
+            sb.asChildOf(activeSpanContext());
         }
         return sb;
+    }
+
+    private SpanContext activeSpanContext() {
+        ActiveSpanHolder.ActiveSpan activeSpan = this.activeSpanHolder.active();
+        if (activeSpan == null) {
+            return null;
+        }
+
+        return activeSpan.span().context();
     }
 
     @Override
@@ -244,18 +253,13 @@ public class MockTracer implements Tracer {
             if (this.startMicros == 0) {
                 this.startMicros = MockSpan.nowMicros();
             }
-            if (firstParent == null) {
-                firstParent = (MockSpan.MockContext) activeSpanHolder.activeContext();
-            }
             return new MockSpan(MockTracer.this, operationName, startMicros, initialTags, firstParent);
         }
 
         @Override
-        public ActiveSpanHolder.Continuation startAndActivate() {
+        public ActiveSpanHolder.Continuation startAndWrap() {
             MockSpan span = this.start();
-            ActiveSpanHolder.Continuation rval = activeSpanHolder.capture(span);
-            rval.activate();
-            return rval;
+            return activeSpanHolder.wrapForActivation(span);
         }
 
         @Override

@@ -1,41 +1,43 @@
 package io.opentracing;
 
+import java.io.IOException;
+
 /**
  * A noop (i.e., cheap-as-possible) implementation of a ActiveSpanHolder.
  */
 public class NoopActiveSpanHolder implements ActiveSpanHolder {
-    public static final Continuation NOOP_CONTINUATION = new Continuation();
+    public static final ActiveSpan NOOP_ACTIVE_SPAN = new NoopActiveSpan();
+    public static final Continuation NOOP_CONTINUATION = new NoopContinuation();
 
     @Override
-    public Continuation active() { return NOOP_CONTINUATION; }
-
-    @Override
-    public Span activeSpan() { return null; }
-
-    @Override
-    public Continuation capture(Span span) {
+    public ActiveSpanHolder.Continuation wrapForActivation(Span span) {
         return NOOP_CONTINUATION;
     }
 
     @Override
-    public SpanContext activeContext() {
-        return null;
-    }
+    public ActiveSpan active() { return NOOP_ACTIVE_SPAN; }
 
-    public static class Continuation implements ActiveSpanHolder.Continuation {
+    public static class NoopActiveSpan implements ActiveSpanHolder.ActiveSpan {
         @Override
-        public void activate() {}
-
-        @Override
-        public Span span() { return null; }
-
-        @Override
-        public ActiveSpanHolder.Continuation capture() { return NOOP_CONTINUATION; }
+        public Span span() {
+            return null;
+        }
 
         @Override
         public void deactivate() {}
 
         @Override
-        public void close() { deactivate(); }
+        public ActiveSpanHolder.Continuation fork() {
+            return NOOP_CONTINUATION;
+        }
+
+        @Override
+        public void close() throws IOException {}
+    }
+    public static class NoopContinuation implements ActiveSpanHolder.Continuation {
+        @Override
+        public ActiveSpan activate() {
+            return NOOP_ACTIVE_SPAN;
+        }
     }
 }

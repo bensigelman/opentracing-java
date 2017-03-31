@@ -2,9 +2,10 @@ package io.opentracing.mdcdemo;
 
 import io.opentracing.ActiveSpanHolder;
 import io.opentracing.Span;
-import io.opentracing.SpanContext;
+import io.opentracing.impl.AbstractActiveSpanHolder;
 import org.slf4j.MDC;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,23 +13,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * MDCActiveSpanHolder illustrates the core ActiveSpanHolder concepts and capabilities to a first approximation. Not
  * production-quality code.
  */
-public class MDCActiveSpanHolder extends ActiveSpanHolder {
-    private final ThreadLocal<MDCContinuation> tlsSnapshot = new ThreadLocal<MDCContinuation>();
+public class MDCActiveSpanHolder extends AbstractActiveSpanHolder {
+    private final ThreadLocal<MDCActiveSpan> tlsSnapshot = new ThreadLocal<MDCActiveSpan>();
 
-    class MDCContinuation extends Continuation {
-        private final Map<String, String> mdcContext;
+    class MDCActiveSpan extends AbstractActiveSpan {
         private final Span span;
-        private MDCContinuation toRestore = null;
+        private MDCActiveSpan toRestore = null;
 
-        MDCContinuation(Span span, AtomicInteger refCount) {
+        MDCActiveSpan(Span span, Map<String, String> mdcContext, AtomicInteger refCount) {
             super(refCount);
-            this.mdcContext = MDC.getCopyOfContextMap();
             this.span = span;
-        }
-
-        @Override
-        public void activate() {
-            toRestore = tlsSnapshot.get();
+            this.toRestore = tlsSnapshot.get();
             tlsSnapshot.set(this);
             MDC.setContextMap(mdcContext);
         }
@@ -53,14 +48,29 @@ public class MDCActiveSpanHolder extends ActiveSpanHolder {
         }
 
     }
+    class MDCContinuation extends AbstractContinuation {
+        private final Map<String, String> mdcContext;
+        private final Span span;
+
+        MDCContinuation(Span span, AtomicInteger refCount) {
+            super(refCount);
+            this.mdcContext = MDC.getCopyOfContextMap();
+            this.span = span;
+        }
+
+        @Override
+        public MDCActiveSpan activate() {
+            return new MDCActiveSpan(span, mdcContext, refCount);
+        }
+    }
 
     @Override
-    protected Continuation doCapture(Span span, AtomicInteger refCount) {
+    protected MDCContinuation doMakeContinuation(Span span, AtomicInteger refCount) {
         return new MDCContinuation(span, refCount);
     }
 
     @Override
-    public Continuation active() {
+    public MDCActiveSpan active() {
         return tlsSnapshot.get();
     }
 

@@ -133,8 +133,8 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
     }
 
     @Override
-    public ActiveSpanHolder.Continuation startAndActivate() {
-        return activeSpanHolder.capture(start());
+    public ActiveSpanHolder.Continuation startAndWrap() {
+        return activeSpanHolder.wrapForActivation(start());
     }
 
     private void withBaggageFrom(SpanContext from) {

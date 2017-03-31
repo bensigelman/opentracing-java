@@ -25,7 +25,7 @@ public class MDCDemo {
     }
 
     public void trivialChild() throws Exception {
-        try (ActiveSpanHolder.Continuation c = this.tracer.buildSpan("trivialParent").startAndActivate()) {
+        try (ActiveSpanHolder.ActiveSpan c = this.tracer.buildSpan("trivialParent").startAndWrap().activate()) {
             // The child will automatically know about the parent.
             Span child = this.tracer.buildSpan("trivialChild").start();
             child.finish();
@@ -44,7 +44,7 @@ public class MDCDemo {
         final List<Future<?>> subfutures = new ArrayList<>();
 
         // Create a parent Continuation for all of the async activity.
-        try (final ActiveSpanHolder.Continuation parentContinuation = tracer.buildSpan("parent").startAndActivate();) {
+        try (final ActiveSpanHolder.ActiveSpan parentActiveSpan = tracer.buildSpan("parent").startAndWrap().activate();) {
 
             // Create 10 async children.
             for (int i = 0; i < 10; i++) {
@@ -55,14 +55,14 @@ public class MDCDemo {
                     public void run() {
                         // START child body
 
-                        try (final ActiveSpanHolder.Continuation childContinuation =
-                                     tracer.buildSpan("child_" + j).startAndActivate();) {
+                        try (final ActiveSpanHolder.ActiveSpan childActiveSpan =
+                                     tracer.buildSpan("child_" + j).startAndWrap().activate();) {
                             Thread.currentThread().sleep(1000);
-                            tracer.holder().activeSpan().log("awoke");
+                            tracer.holder().active().span().log("awoke");
                             Runnable r = new Runnable() {
                                 @Override
                                 public void run() {
-                                    Span active = tracer.holder().activeSpan();
+                                    Span active = tracer.holder().active().span();
                                     active.log("awoke again");
                                     System.out.println("MDC parent number: " + MDC.get("parent number"));
                                     // Create a grandchild for each child... note that we don't *need* to use the
