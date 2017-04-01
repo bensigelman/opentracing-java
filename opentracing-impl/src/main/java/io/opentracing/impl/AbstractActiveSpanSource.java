@@ -6,7 +6,8 @@ import io.opentracing.Span;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by bhs on 3/30/17.
+ * AbstractActiveSpanSource deals with {@link ActiveSpanSource}/{@link Handle}/{@link Continuation}
+ * reference counting while allowing subclasses to extend with bindings to ThreadLocals, etc.
  */
 public abstract class AbstractActiveSpanSource implements ActiveSpanSource {
 

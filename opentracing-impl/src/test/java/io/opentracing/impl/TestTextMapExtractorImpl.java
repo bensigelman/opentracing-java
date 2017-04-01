@@ -30,6 +30,7 @@ final class TestTextMapExtractorImpl implements Extractor<TextMap> {
             }
         }
 
+        // XXX: We need to remove the bizarre inheritance relationship between SpanBuilder and SpanContext
         return null != marker ? new TestSpanBuilder(marker, null) : NoopSpanBuilder.INSTANCE;
     }
 }
