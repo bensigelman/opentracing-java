@@ -136,7 +136,7 @@ public final class AbstractTracerTest {
 
         @Override
         public AbstractSpanBuilder createSpanBuilder(String operationName) {
-            return new AbstractSpanBuilder(operationName, holder()) {
+            return new AbstractSpanBuilder(operationName, spanSource()) {
                 @Override
                 protected AbstractSpan createSpan() {
                     return new TestSpanImpl(this.operationName);
