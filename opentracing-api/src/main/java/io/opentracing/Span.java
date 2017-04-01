@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * <p>Spans are created by the {@link Tracer#buildSpan} interface.
  */
-public interface Span {
+public interface Span extends Closeable {
     /**
      * Retrieve the associated SpanContext.
      *
@@ -52,6 +52,8 @@ public interface Span {
      * @see Span#context()
      */
     void finish(long finishMicros);
+
+    void close();
 
     /**
      * Set a key:value tag on the Span.

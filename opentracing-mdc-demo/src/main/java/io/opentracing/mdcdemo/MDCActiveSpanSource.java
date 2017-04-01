@@ -42,7 +42,7 @@ public class MDCActiveSpanSource extends AbstractActiveSpanSource {
         }
 
         @Override
-        protected ActiveSpanSource holder() {
+        protected ActiveSpanSource spanSource() {
             return MDCActiveSpanSource.this;
         }
 
@@ -64,7 +64,7 @@ public class MDCActiveSpanSource extends AbstractActiveSpanSource {
     }
 
     @Override
-    protected MDCContinuation doMakeContinuation(Span span, AtomicInteger refCount) {
+    protected MDCContinuation makeContinuation(Span span, AtomicInteger refCount) {
         return new MDCContinuation(span, refCount);
     }
 

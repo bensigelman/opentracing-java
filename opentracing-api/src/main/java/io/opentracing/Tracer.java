@@ -33,12 +33,14 @@ public interface Tracer {
      *   Tracer tracer = ...
      *
      *   // Note: if there is an {@link ActiveSpanSource#activeContext()}, it will be treated as the parent of workSpan.
-     *   Span workSpan = tracer.buildSpan("DoWork")
-     *                         .start();
+     *   try (ActiveSpanSource.Handle workHandle = tracer.buildSpan("DoWork").startAndActivate()) {
+     *       workHandle.span().setTag("...", "...");
+     *       // etc, etc
+     *   }
      *
      *   // It's also possible to create Spans with explicit parent References and tags.
      *   Span http = tracer.buildSpan("HandleHTTPRequest")
-     *                     .asChildOf(workSpan.context())  // an explicit parent
+     *                     .asChildOf(rpcSpanContext)  // an explicit parent
      *                     .withTag("user_agent", req.UserAgent)
      *                     .withTag("lucky_number", 42)
      *                     .start();
@@ -48,6 +50,7 @@ public interface Tracer {
 
     /**
      * @return the ActiveSpanSource associated with this Tracer. Must not be null.
+     *
      * @see ActiveSpanSource
      * @see ThreadLocalActiveSpanSource a simple built-in thread-local-storage-based ActiveSpanSource
      */
@@ -118,9 +121,14 @@ public interface Tracer {
          * represent multiple such References.
 	 *
          * <p>
-         * If no references are added manually (and {@link SpanBuilder#asRoot()} is not invoked) before
-         * calling {@link SpanBuilder#start()}, an inferred reference is created to any
-         * {@link ActiveSpanSource#activeContext()} context.
+         * If
+	 * <ul>
+	 * <li>the {@link Tracer}'s {@link ActiveSpanSource#active()} is not null, and
+	 * <li>no <b>explicit</b> references are added via {@link SpanBuilder#addReference}, and
+	 * <li>{@link SpanBuilder#asRoot()} is not invoked,
+	 * </ul>
+	 * ... then an inferred {@link References#CHILD_OF} reference is created to the {@link ActiveSpanSource#active()}
+	 * {@link SpanContext} when either {@link SpanBuilder#start()} or {@link SpanBuilder#startAndActivate} is invoked.
          *
          * @param referenceType the reference type, typically one of the constants defined in References
          * @param referencedContext the SpanContext being referenced; e.g., for a References.CHILD_OF referenceType, the
@@ -155,26 +163,44 @@ public interface Tracer {
 
         /**
          * Returns a newly started and {@linkplain ActiveSpanSource.Continuation#activate() activated}
-         * {@link ActiveSpanSource.Continuation}.
+         * {@link ActiveSpanSource.Handle}.
          *
          * <p>
          *
-         * Note that the Continuation supports try-with-resources. For example:
+         * The returned {@link ActiveSpanSource.Handle} supports try-with-resources. For example:
          * <pre>{@code
-         *     try (ActiveSpanSource.Handle spanCont = tracer.buildSpan("...").startAndActivate()) {
+         *     try (ActiveSpanSource.Handle handle = tracer.buildSpan("...").startAndActivate()) {
          *         // Do work
-         *         Span span = tracer.activeSpanHolder().activeSpan();
+         *         Span span = tracer.spanSource().activeSpan();
          *         span.setTag( ... );  // etc, etc
-         *     }  // Span finishes automatically unless captured via {@link ActiveSpanSource.Handle#defer}
+         *     }  // Span finishes automatically unless pinned via {@link ActiveSpanSource.Handle#defer}
          * }</pre>
+	 *
+         * <p>
+         * If
+	 * <ul>
+	 * <li>the {@link Tracer}'s {@link ActiveSpanSource#active()} is not null, and
+	 * <li>no <b>explicit</b> references are added via {@link SpanBuilder#addReference}, and
+	 * <li>{@link SpanBuilder#asRoot()} is not invoked,
+	 * </ul>
+	 * ... then an inferred {@link References#CHILD_OF} reference is created to the {@link ActiveSpanSource#active()}
+	 * {@link SpanContext} when either {@link SpanBuilder#start()} or {@link SpanBuilder#startAndActivate} is invoked.
          *
-         * @return a pre-activated {@link ActiveSpanSource.Continuation}
+         * <p>
+         * Note: {@link SpanBuilder#startAndActivate()} is a shorthand for
+         * {@code tracer.spanSource().adopt(SpanBuilder.start()).activate()}
+         * </p>
          *
+         * @return a pre-activated {@link ActiveSpanSource.Handle}
+         *
+         * @see Tracer#spanSource()
          * @see ActiveSpanSource.Continuation#activate()
+         * @see ActiveSpanSource#adopt(Span)
          */
         ActiveSpanSource.Handle startAndActivate();
 
         /**
+	 * @see SpanBuilder#startAndActivate()
          * @return the newly-started Span instance, which will *not* be automatically activated by the
          *         {@link ActiveSpanSource}
          */

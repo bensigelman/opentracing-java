@@ -40,7 +40,7 @@ public abstract class AbstractActiveSpanSource implements ActiveSpanSource {
         /**
          * Return the {@link ActiveSpanSource} associated wih this {@link Continuation}.
          */
-        protected abstract ActiveSpanSource holder();
+        protected abstract ActiveSpanSource spanSource();
 
         /**
          * Decrement the {@link Continuation}'s reference count, calling {@link Span#finish()} if no more references
@@ -64,7 +64,7 @@ public abstract class AbstractActiveSpanSource implements ActiveSpanSource {
         @Override
         public final Continuation defer() {
             refCount.incrementAndGet();
-            return ((AbstractActiveSpanSource)holder()).doMakeContinuation(span(), refCount);
+            return ((AbstractActiveSpanSource) spanSource()).makeContinuation(span(), refCount);
         }
     }
 
@@ -79,8 +79,8 @@ public abstract class AbstractActiveSpanSource implements ActiveSpanSource {
 
     @Override
     public final Handle adopt(Span span) {
-        return doMakeContinuation(span, new AtomicInteger(1)).activate();
+        return makeContinuation(span, new AtomicInteger(1)).activate();
     }
 
-    protected abstract Continuation doMakeContinuation(Span span, AtomicInteger refCount);
+    protected abstract Continuation makeContinuation(Span span, AtomicInteger refCount);
 }
