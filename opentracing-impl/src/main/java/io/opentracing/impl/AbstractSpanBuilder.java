@@ -133,7 +133,7 @@ abstract class AbstractSpanBuilder implements Tracer.SpanBuilder {
     }
 
     @Override
-    public ActiveSpanSource.Handle startAndWrap() {
+    public ActiveSpanSource.Handle startAndActivate() {
         return activeSpanSource.adopt(start());
     }
 

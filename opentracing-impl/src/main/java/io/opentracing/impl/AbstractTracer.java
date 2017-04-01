@@ -45,7 +45,7 @@ abstract class AbstractTracer implements Tracer {
     abstract AbstractSpanBuilder createSpanBuilder(String operationName);
 
     @Override
-    public ActiveSpanSource holder() {
+    public ActiveSpanSource spanSource() {
         return this.activeSpanSource;
     }
 

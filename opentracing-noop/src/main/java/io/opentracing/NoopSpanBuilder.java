@@ -66,7 +66,7 @@ final class NoopSpanBuilderImpl implements NoopSpanBuilder {
     }
 
     @Override
-    public ActiveSpanSource.Handle startAndWrap() {
+    public ActiveSpanSource.Handle startAndActivate() {
         return NoopActiveSpanSource.NOOP_ACTIVE_SPAN;
     }
 

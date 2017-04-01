@@ -23,7 +23,7 @@ public interface Tracer {
     /**
      * Return a new SpanBuilder for a Span with the given `operationName`.
      *
-     * <p>If there is an active Span according to the {@link Tracer#holder()}'s {@link ActiveSpanSource#activeContext},
+     * <p>If there is an active Span according to the {@link Tracer#spanSource()}'s {@link ActiveSpanSource#activeContext},
      * buildSpan will automatically reference that active Span as a parent.
      *
      * <p>You can override the operationName later via {@link Span#setOperationName(String)}.
@@ -51,7 +51,7 @@ public interface Tracer {
      * @see ActiveSpanSource
      * @see ThreadLocalActiveSpanSource a simple built-in thread-local-storage-based ActiveSpanSource
      */
-    ActiveSpanSource holder();
+    ActiveSpanSource spanSource();
 
     /**
      * Inject a SpanContext into a `carrier` of a given type, presumably for propagation across process boundaries.
@@ -161,18 +161,18 @@ public interface Tracer {
          *
          * Note that the Continuation supports try-with-resources. For example:
          * <pre>{@code
-         *     try (ActiveSpanSource.Continuation spanCont = tracer.buildSpan("...").startAndWrap()) {
+         *     try (ActiveSpanSource.Handle spanCont = tracer.buildSpan("...").startAndActivate()) {
          *         // Do work
          *         Span span = tracer.activeSpanHolder().activeSpan();
          *         span.setTag( ... );  // etc, etc
-         *     }  // Span finishes automatically unless captured via {@link ActiveSpanSource.Continuation#fork }
+         *     }  // Span finishes automatically unless captured via {@link ActiveSpanSource.Handle#defer}
          * }</pre>
          *
          * @return a pre-activated {@link ActiveSpanSource.Continuation}
          *
          * @see ActiveSpanSource.Continuation#activate()
          */
-        ActiveSpanSource.Handle startAndWrap();
+        ActiveSpanSource.Handle startAndActivate();
 
         /**
          * @return the newly-started Span instance, which will *not* be automatically activated by the

@@ -171,7 +171,7 @@ public class MockTracer implements Tracer {
     }
 
     @Override
-    public ActiveSpanSource holder() {
+    public ActiveSpanSource spanSource() {
         return activeSpanSource;
     }
 
@@ -257,7 +257,7 @@ public class MockTracer implements Tracer {
         }
 
         @Override
-        public ActiveSpanSource.Handle startAndWrap() {
+        public ActiveSpanSource.Handle startAndActivate() {
             MockSpan span = this.start();
             return activeSpanSource.adopt(span);
         }
