@@ -20,13 +20,13 @@ public interface NoopTracer extends Tracer {
 
 final class NoopTracerImpl implements NoopTracer {
     final static NoopTracer INSTANCE = new NoopTracerImpl();
-    final static ThreadLocalActiveSpanSource ACTIVE_SPAN_HOLDER = new ThreadLocalActiveSpanSource();
+    final static ThreadLocalActiveSpan.Source ACTIVE_SPAN_HOLDER = new ThreadLocalActiveSpan.Source();
 
     @Override
     public SpanBuilder buildSpan(String operationName) { return NoopSpanBuilderImpl.INSTANCE; }
 
     @Override
-    public ActiveSpanSource spanSource() { return ACTIVE_SPAN_HOLDER; }
+    public ActiveSpan.Source spanSource() { return ACTIVE_SPAN_HOLDER; }
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {}

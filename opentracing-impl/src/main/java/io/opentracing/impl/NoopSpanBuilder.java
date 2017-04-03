@@ -13,16 +13,16 @@
  */
 package io.opentracing.impl;
 
+import io.opentracing.ActiveSpan;
 import io.opentracing.NoopSpanContext;
-import io.opentracing.ActiveSpanSource;
-import io.opentracing.ThreadLocalActiveSpanSource;
+import io.opentracing.ThreadLocalActiveSpan;
 
 final class NoopSpanBuilder extends AbstractSpanBuilder implements io.opentracing.NoopSpanBuilder, NoopSpanContext {
 
-    static final NoopSpanBuilder INSTANCE = new NoopSpanBuilder("noop", new ThreadLocalActiveSpanSource());
+    static final NoopSpanBuilder INSTANCE = new NoopSpanBuilder("noop", new ThreadLocalActiveSpan.Source());
 
-    public NoopSpanBuilder(String operationName, ActiveSpanSource activeSpanSource) {
-        super(operationName, activeSpanSource);
+    public NoopSpanBuilder(String operationName, ActiveSpan.Source spanSource) {
+        super(operationName, spanSource);
     }
 
     @Override

@@ -1,35 +1,27 @@
 package io.opentracing.mdcdemo;
 
-import io.opentracing.ActiveSpanSource;
 import io.opentracing.Span;
-import io.opentracing.impl.AbstractActiveSpanSource;
+import io.opentracing.impl.AbstractActiveSpan;
 import org.slf4j.MDC;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * MDCActiveSpanSource illustrates the core ActiveSpanSource concepts and capabilities to a first approximation. Not
+ * MDCSource illustrates the core Source concepts and capabilities to a first approximation. Not
  * production-quality code.
  */
-public class MDCActiveSpanSource extends AbstractActiveSpanSource {
+public class MDCSource extends AbstractActiveSpan.AbstractSource {
     private final ThreadLocal<MDCHandle> tlsSnapshot = new ThreadLocal<MDCHandle>();
 
-    class MDCHandle extends AbstractHandle {
-        private final Span span;
+    class MDCHandle extends AbstractActiveSpan {
         private MDCHandle toRestore = null;
 
         MDCHandle(Span span, Map<String, String> mdcContext, AtomicInteger refCount) {
-            super(refCount);
-            this.span = span;
+            super(span, refCount);
             this.toRestore = tlsSnapshot.get();
             tlsSnapshot.set(this);
             MDC.setContextMap(mdcContext);
-        }
-
-        @Override
-        public Span span() {
-            return span;
         }
 
         @Override
@@ -42,12 +34,12 @@ public class MDCActiveSpanSource extends AbstractActiveSpanSource {
         }
 
         @Override
-        protected ActiveSpanSource spanSource() {
-            return MDCActiveSpanSource.this;
+        protected Source spanSource() {
+            return MDCSource.this;
         }
 
     }
-    class MDCContinuation extends AbstractContinuation {
+    class MDCContinuation extends AbstractActiveSpan.AbstractContinuation {
         private final Map<String, String> mdcContext;
         private final Span span;
 
