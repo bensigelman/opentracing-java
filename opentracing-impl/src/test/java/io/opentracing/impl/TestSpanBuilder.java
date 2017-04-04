@@ -18,8 +18,8 @@ import io.opentracing.ActiveSpanSource;
 
 final class TestSpanBuilder extends AbstractSpanBuilder {
 
-    public TestSpanBuilder(String operationName, ActiveSpanSource activeSpanSource) {
-        super(operationName, activeSpanSource);
+    public TestSpanBuilder(String operationName, ActiveSpanSource spanSource) {
+        super(operationName, spanSource);
     }
 
     @Override

@@ -13,9 +13,10 @@
  */
 package io.opentracing.impl;
 
-import io.opentracing.*;
 import io.opentracing.ActiveSpanSource;
+import io.opentracing.SpanContext;
 import io.opentracing.ThreadLocalActiveSpanSource;
+import io.opentracing.Tracer;
 import io.opentracing.propagation.Extractor;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.Injector;
@@ -29,15 +30,15 @@ abstract class AbstractTracer implements Tracer {
     static final boolean BAGGAGE_ENABLED = !Boolean.getBoolean("opentracing.propagation.dropBaggage");
 
     private final PropagationRegistry registry = new PropagationRegistry();
-    private ActiveSpanSource activeSpanSource;
+    private ActiveSpanSource spanSource;
 
 
     protected AbstractTracer() {
         this(new ThreadLocalActiveSpanSource());
     }
 
-    protected AbstractTracer(ActiveSpanSource activeSpanSource) {
-        this.activeSpanSource = activeSpanSource;
+    protected AbstractTracer(ActiveSpanSource spanSource) {
+        this.spanSource = spanSource;
         registry.register(Format.Builtin.TEXT_MAP, new TextMapInjectorImpl(this));
         registry.register(Format.Builtin.TEXT_MAP, new TextMapExtractorImpl(this));
     }
@@ -46,7 +47,7 @@ abstract class AbstractTracer implements Tracer {
 
     @Override
     public ActiveSpanSource spanSource() {
-        return this.activeSpanSource;
+        return this.spanSource;
     }
 
     @Override
