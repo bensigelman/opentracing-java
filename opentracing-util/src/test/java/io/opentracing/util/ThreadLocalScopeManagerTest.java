@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class ThreadLocalScopeManagerTest {
@@ -32,13 +32,13 @@ public class ThreadLocalScopeManagerTest {
     }
 
     @Test
-    public void missingActiveSpan() throws Exception {
+    public void missingActiveScope() throws Exception {
         Scope missingScope = source.active();
         assertNull(missingScope);
     }
 
     @Test
-    public void makeActiveSpan() throws Exception {
+    public void activateSpan() throws Exception {
         Span span = mock(Span.class);
 
         // We can't use 1.7 features like try-with-resources in this repo without meddling with pom details for tests.
@@ -52,7 +52,7 @@ public class ThreadLocalScopeManagerTest {
         }
 
         // Make sure the Span got finish()ed.
-        verify(span, never()).finish();
+        verify(span, times(1)).finish();
 
         // And now it's gone:
         Scope missingScope = source.active();

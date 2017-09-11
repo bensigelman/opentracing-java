@@ -33,8 +33,15 @@ public interface ScopeManager {
     Scope activate(Span span, Scope.Observer scopeObserver);
 
     /**
-     * @return the currently active {@link Scope} which can be used to access the currently active
-     * {@link Scope#span()}
+     * Return the currently active {@link Scope} which can be used to access the currently active
+     * {@link Scope#span()}.
+     *
+     * <p>
+     * If there is an {@link Scope non-null scope}, its wrapped {@link Span} becomes an implicit parent of any
+     * newly-created {@link Span} at {@link Tracer.SpanBuilder#startActive()} time (rather than at
+     * {@link Tracer#buildSpan(String)} time).
+     *
+     * @return the {@link Scope active scope}, or null if none could be found.
      */
     Scope active();
 }

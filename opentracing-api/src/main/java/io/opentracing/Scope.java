@@ -22,11 +22,16 @@ import java.io.Closeable;
  * Many times a {@link Span} will be extant (in that {@link Span#finish()} has not been called) despite being in a
  * non-runnable state from a CPU/scheduler standpoint. For instance, a {@link Span} representing the client side of an
  * RPC will be unfinished but blocked on IO while the RPC is still outstanding. A {@link Scope} defines when a given
- * {@link Span} <em>is</em> scheduled and on the critical path.
+ * {@link Span} <em>is</em> scheduled and on the path.
  */
 public interface Scope extends Closeable {
     /**
-     * End this {@link Scope}, updating the {@link ScopeManager#active()} in the process.
+     * Mark the end of the active period for the current thread and {@link Scope},
+     * updating the {@link ScopeManager#active()} in the process.
+     *
+     * <p>
+     * NOTE: Calling {@link #deactivate} more than once on a single {@link ActiveSpan} instance leads to undefined
+     * behavior.
      */
     @Override
     void close();
@@ -45,9 +50,18 @@ public interface Scope extends Closeable {
      */
     interface Observer {
         /**
-         * A trivial, static {@link Scope.Observer} that finishes the underlying {@link Span} on scope close.
+         * A static {@link Scope.Observer} that finishes the underlying {@link Span} on
+         * {@link Scope#close()}.
          */
-        Observer FINISH_ON_CLOSE = new FinishOnCloseScopeObserverImpl();
+        Observer FINISH_ON_CLOSE = new Observer() {
+            @Override
+            public void onActivate(Scope scope) {}
+
+            @Override
+            public void onClose(Scope scope) {
+                scope.span().finish();
+            }
+        };
 
         /**
          * Invoked just after the {@link Scope} becomes active.
@@ -58,18 +72,5 @@ public interface Scope extends Closeable {
          * Invoked just before the {@link Scope} closes / is deactivated.
          */
         void onClose(Scope scope);
-    }
-}
-
-/**
- * @see Scope.Observer#FINISH_ON_CLOSE
- */
-class FinishOnCloseScopeObserverImpl implements Scope.Observer {
-    @Override
-    public void onActivate(Scope scope) {}
-
-    @Override
-    public void onClose(Scope scope) {
-        scope.span().finish();
     }
 }

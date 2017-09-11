@@ -18,48 +18,21 @@ import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
 /**
- * Created by bhs on 8/1/17.
+ * A simple {@link ScopeManager} implementation built on top of Java's thread-local storage primitive.
+ *
+ * @see ThreadLocalScope
  */
 public class ThreadLocalScopeManager implements ScopeManager {
     final ThreadLocal<ThreadLocalScope> tlsScope = new ThreadLocal<ThreadLocalScope>();
 
-    public class ThreadLocalScope implements Scope {
-        private final Span wrapped;
-        private final ThreadLocalScope toRestore;
-        private final Scope.Observer scopeObserver;
-
-        ThreadLocalScope(Span wrapped, Scope.Observer scopeObserver) {
-            this.wrapped = wrapped;
-            this.toRestore = ThreadLocalScopeManager.this.tlsScope.get();
-            this.scopeObserver = scopeObserver;
-            tlsScope.set(this);
-            if (this.scopeObserver != null) {
-                this.scopeObserver.onActivate(this);
-            }
-        }
-
-        @Override
-        public void close() {
-            if (this.scopeObserver != null) {
-                this.scopeObserver.onClose(this);
-            }
-            tlsScope.set(toRestore);
-        }
-
-        @Override
-        public Span span() {
-            return wrapped;
-        }
-    }
-
     @Override
     public Scope activate(Span span) {
-        return new ThreadLocalScope(span, null);
+        return new ThreadLocalScope(this, span, Scope.Observer.FINISH_ON_CLOSE);
     }
 
     @Override
     public Scope activate(Span span, Scope.Observer scopeObserver) {
-        return new ThreadLocalScope(span, scopeObserver);
+        return new ThreadLocalScope(this, span, scopeObserver);
     }
 
     @Override
