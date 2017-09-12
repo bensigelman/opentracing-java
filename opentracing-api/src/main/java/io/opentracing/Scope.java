@@ -50,6 +50,17 @@ public interface Scope extends Closeable {
      */
     interface Observer {
         /**
+         * A static noop {@link Scope.Observer}.
+         */
+        Observer NOOP = new Observer() {
+            @Override
+            public void onActivate(Scope scope) {}
+
+            @Override
+            public void onClose(Scope scope) {}
+        };
+
+        /**
          * A static {@link Scope.Observer} that finishes the underlying {@link Span} on
          * {@link Scope#close()}.
          */
