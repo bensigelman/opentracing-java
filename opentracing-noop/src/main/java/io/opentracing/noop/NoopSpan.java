@@ -35,16 +35,6 @@ final class NoopSpanImpl implements NoopSpan {
     public void finish(long finishMicros) {}
 
     @Override
-    public Scope activate() {
-        return NoopScopeManagerImpl.NoopScopeImpl.INSTANCE;
-    }
-
-    @Override
-    public Scope activate(Scope.Observer observer) {
-        return NoopScopeManagerImpl.NoopScopeImpl.INSTANCE;
-    }
-
-    @Override
     public NoopSpan setTag(String key, String value) { return this; }
 
     @Override
