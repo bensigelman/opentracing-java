@@ -30,7 +30,7 @@ public interface Scope extends Closeable {
      * updating the {@link ScopeManager#active()} in the process.
      *
      * <p>
-     * NOTE: Calling {@link #deactivate} more than once on a single {@link ActiveSpan} instance leads to undefined
+     * NOTE: Calling {@link #close} more than once on a single {@link Scope} instance leads to undefined
      * behavior.
      */
     @Override

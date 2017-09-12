@@ -17,9 +17,6 @@ import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
-/**
- * Created by bhs on 8/5/17.
- */
 public interface NoopScopeManager extends ScopeManager {
     NoopScopeManager INSTANCE = new NoopScopeManagerImpl();
 
@@ -28,6 +25,9 @@ public interface NoopScopeManager extends ScopeManager {
     }
 }
 
+/**
+ * A noop (i.e., cheap-as-possible) implementation of an ScopeManager.
+ */
 class NoopScopeManagerImpl implements NoopScopeManager {
     @Override
     public Scope activate(Span span) {
