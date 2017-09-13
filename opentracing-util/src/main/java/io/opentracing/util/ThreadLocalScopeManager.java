@@ -27,12 +27,12 @@ public class ThreadLocalScopeManager implements ScopeManager {
 
     @Override
     public Scope activate(Span span) {
-        return new ThreadLocalScope(this, span, Scope.Observer.FINISH_ON_CLOSE);
+        return new ThreadLocalScope(this, span, true);
     }
 
     @Override
-    public Scope activate(Span span, Scope.Observer scopeObserver) {
-        return new ThreadLocalScope(this, span, scopeObserver);
+    public Scope activate(Span span, boolean finishOnClose) {
+        return new ThreadLocalScope(this, span, finishOnClose);
     }
 
     @Override

@@ -35,7 +35,7 @@ class NoopScopeManagerImpl implements NoopScopeManager {
     }
 
     @Override
-    public Scope activate(Span span, Scope.Observer scopeObserver) {
+    public Scope activate(Span span, boolean finishOnClose) {
         return NoopScope.INSTANCE;
     }
 

@@ -192,7 +192,7 @@ public interface Tracer {
          * @see Scope
          */
         Scope startActive();
-        Scope startActive(Scope.Observer observer);
+        Scope startActive(boolean finishOnClose);
 
         /**
          * Like {@link #startActive()}, but the returned {@link Span} has not been registered via the

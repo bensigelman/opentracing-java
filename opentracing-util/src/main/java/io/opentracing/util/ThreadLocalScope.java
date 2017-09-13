@@ -26,19 +26,15 @@ import io.opentracing.Span;
 public class ThreadLocalScope implements Scope {
     private final ThreadLocalScopeManager scopeManager;
     private final Span wrapped;
+    private final boolean finishOnClose;
     private final ThreadLocalScope toRestore;
-    private final Scope.Observer scopeObserver;
 
-    ThreadLocalScope(ThreadLocalScopeManager scopeManager, Span wrapped, Scope.Observer scopeObserver) {
+    ThreadLocalScope(ThreadLocalScopeManager scopeManager, Span wrapped, boolean finishOnClose) {
         this.scopeManager = scopeManager;
         this.wrapped = wrapped;
-        this.scopeObserver = scopeObserver;
+        this.finishOnClose = finishOnClose;
         this.toRestore = scopeManager.tlsScope.get();
         scopeManager.tlsScope.set(this);
-
-        if (scopeObserver != null) {
-            scopeObserver.onActivate(this);
-        }
     }
 
     @Override
@@ -48,9 +44,8 @@ public class ThreadLocalScope implements Scope {
             return;
         }
 
-        if (scopeObserver != null) {
-            scopeObserver.onClose(this);
-        }
+        if (finishOnClose)
+            wrapped.finish();
 
         scopeManager.tlsScope.set(toRestore);
     }

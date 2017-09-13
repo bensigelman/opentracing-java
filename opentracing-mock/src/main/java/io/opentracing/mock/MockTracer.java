@@ -248,8 +248,8 @@ public class MockTracer implements Tracer {
         }
 
         @Override
-        public Scope startActive(Scope.Observer observer) {
-            return MockTracer.this.scopeManager().activate(this.startManual(), observer);
+        public Scope startActive(boolean finishOnClose) {
+            return MockTracer.this.scopeManager().activate(this.startManual(), finishOnClose);
         }
 
         @Override

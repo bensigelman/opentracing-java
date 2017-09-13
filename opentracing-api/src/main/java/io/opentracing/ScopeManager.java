@@ -30,7 +30,7 @@ public interface ScopeManager {
      * programming error to neglect to call {@link Scope#close()} on the returned instance.
      */
     Scope activate(Span span);
-    Scope activate(Span span, Scope.Observer scopeObserver);
+    Scope activate(Span span, boolean finishOnClose);
 
     /**
      * Return the currently active {@link Scope} which can be used to access the currently active

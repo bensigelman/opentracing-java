@@ -40,48 +40,4 @@ public interface Scope extends Closeable {
      * @return the {@link Span} that's been scoped by this {@link Scope}
      */
     Span span();
-
-    /**
-     * {@link Observer} is a simple API for observing the opening/closing of {@link Scope} instances.
-     *
-     * @see ScopeManager#activate(Span, Observer)
-     * @see Tracer.SpanBuilder#startActive(Observer)
-     * @see Span#activate(Observer)
-     */
-    interface Observer {
-        /**
-         * A static noop {@link Scope.Observer}.
-         */
-        Observer NOOP = new Observer() {
-            @Override
-            public void onActivate(Scope scope) {}
-
-            @Override
-            public void onClose(Scope scope) {}
-        };
-
-        /**
-         * A static {@link Scope.Observer} that finishes the underlying {@link Span} on
-         * {@link Scope#close()}.
-         */
-        Observer FINISH_ON_CLOSE = new Observer() {
-            @Override
-            public void onActivate(Scope scope) {}
-
-            @Override
-            public void onClose(Scope scope) {
-                scope.span().finish();
-            }
-        };
-
-        /**
-         * Invoked just after the {@link Scope} becomes active.
-         */
-        void onActivate(Scope scope);
-
-        /**
-         * Invoked just before the {@link Scope} closes / is deactivated.
-         */
-        void onClose(Scope scope);
-    }
 }
