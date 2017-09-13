@@ -19,7 +19,7 @@ package io.opentracing;
  * (via {@link ScopeManager#active()}).
  *
  * @see Scope
- * @see Tracer#setScopeManager(ScopeManager)
+ * @see Tracer#scopeManager()
  */
 public interface ScopeManager {
     /**

@@ -127,10 +127,6 @@ public final class GlobalTracer implements Tracer {
         return tracer.scopeManager();
     }
 
-    public void setScopeManager(ScopeManager scopeManager) {
-        tracer.setScopeManager(scopeManager);
-    }
-
     @Override
     public SpanBuilder buildSpan(String operationName) {
         return tracer.buildSpan(operationName);

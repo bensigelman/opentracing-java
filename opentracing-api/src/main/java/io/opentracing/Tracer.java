@@ -26,11 +26,6 @@ public interface Tracer {
     ScopeManager scopeManager();
 
     /**
-     * Set a new {@link ScopeManager}, presumably as part of initialization.
-     */
-    void setScopeManager(ScopeManager scopeManager);
-
-    /**
      * Return a new SpanBuilder for a Span with the given `operationName`.
      *
      * <p>You can override the operationName later via {@link Span#setOperationName(String)}.

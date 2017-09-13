@@ -29,10 +29,6 @@ final class NoopTracerImpl implements NoopTracer {
         return null;
     }
 
-    public void setScopeManager(ScopeManager scopeManager) {
-
-    }
-
     @Override
     public SpanBuilder buildSpan(String operationName) { return NoopSpanBuilderImpl.INSTANCE; }
 

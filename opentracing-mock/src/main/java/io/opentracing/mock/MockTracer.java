@@ -42,15 +42,19 @@ public class MockTracer implements Tracer {
     private ScopeManager scopeManager;
 
     public MockTracer() {
-        this(Propagator.PRINTER);
+        this(Propagator.PRINTER, NoopScopeManager.INSTANCE);
+    }
+
+    public MockTracer(Propagator propagator) {
+        this(propagator, NoopScopeManager.INSTANCE);
     }
 
     /**
      * Create a new MockTracer that passes through any calls to inject() and/or extract().
      */
-    public MockTracer(Propagator propagator) {
+    public MockTracer(Propagator propagator, ScopeManager scopeManager) {
         this.propagator = propagator;
-        this.scopeManager = NoopScopeManager.INSTANCE;
+        this.scopeManager = scopeManager;
     }
 
     /**
@@ -156,10 +160,6 @@ public class MockTracer implements Tracer {
     @Override
     public ScopeManager scopeManager() {
         return this.scopeManager;
-    }
-
-    public void setScopeManager(ScopeManager scopeManager) {
-        this.scopeManager = scopeManager;
     }
 
     @Override
