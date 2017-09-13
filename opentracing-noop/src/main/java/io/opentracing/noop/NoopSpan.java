@@ -13,13 +13,14 @@
  */
 package io.opentracing.noop;
 
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 
 import java.util.Map;
 
 public interface NoopSpan extends Span {
-    static final NoopSpan INSTANCE = new NoopSpanImpl();
+    NoopSpan INSTANCE = new NoopSpanImpl();
 }
 
 final class NoopSpanImpl implements NoopSpan {
